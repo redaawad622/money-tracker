@@ -3,6 +3,7 @@ import { CURRENCIES } from '../lib/money'
 import { useSettingsStore } from '../stores/settings'
 
 const { settings } = useSettingsStore()
+const logoUrl = `${import.meta.env.BASE_URL}logo.svg`
 </script>
 
 <template>
@@ -10,6 +11,13 @@ const { settings } = useSettingsStore()
     <header class="header">
       <h1 class="title">Settings</h1>
     </header>
+    <section class="brand">
+      <img :src="logoUrl" alt="" class="brand-logo" width="56" height="56" />
+      <div class="brand-text">
+        <span class="brand-name">Money Tracker</span>
+        <span class="muted brand-sub">Daily spending, month by month</span>
+      </div>
+    </section>
     <section class="card fields">
       <label class="field">
         Monthly budget
@@ -33,6 +41,11 @@ const { settings } = useSettingsStore()
 <style scoped>
 .header { min-height: 48px; display: flex; align-items: center; }
 .title { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+.brand { display: flex; align-items: center; gap: 14px; }
+.brand-logo { border-radius: 14px; }
+.brand-text { display: flex; flex-direction: column; gap: 2px; }
+.brand-name { font-size: 17px; font-weight: 800; }
+.brand-sub { font-size: 13px; font-weight: 600; }
 .fields { display: flex; flex-direction: column; gap: 16px; }
 .check { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; min-height: 44px; }
 .check input { width: 20px; height: 20px; accent-color: var(--accent); }

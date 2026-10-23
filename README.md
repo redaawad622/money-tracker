@@ -1,4 +1,6 @@
-# Money Tracker
+<p align="center"><img src="public/logo.svg" width="120" alt="Money Tracker logo"></p>
+
+<h1 align="center">Money Tracker</h1>
 
 Track your spending day by day, month by month, with fixed subscriptions (monthly and every 3 months) tracked on their own.
 
@@ -28,6 +30,7 @@ npm run build    # type-check + production build into dist/
 npm i @capacitor/ios @capacitor/android
 npx cap add ios          # needs Xcode + CocoaPods
 npx cap add android      # needs Android Studio
+npx @capacitor/assets generate --assetPath resources --iconBackgroundColor "#1F6F54" --splashBackgroundColor "#F4F5F1"   # app icons from resources/icon.png
 npm run cap:sync         # build web app and copy it into the native projects
 npx cap open ios         # or: npx cap open android
 ```
