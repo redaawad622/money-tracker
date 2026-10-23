@@ -24,13 +24,23 @@ npm test         # unit tests (dates, subscription schedule)
 npm run build    # type-check + production build into dist/
 ```
 
-## Run on a phone (Capacitor)
+## Run on iPhone
+
+The iOS project is in `ios/` (Swift Package Manager, no CocoaPods). With the phone connected and trusted:
 
 ```bash
-npm i @capacitor/ios @capacitor/android
-npx cap add ios          # needs Xcode + CocoaPods
+npm run cap:sync
+npx cap run ios          # pick your iPhone, or: npx cap open ios and press Run
+```
+
+With a free Apple personal team the installed app expires after 7 days; run it again to reinstall.
+
+## Android / regenerating icons (Capacitor)
+
+```bash
+npm i @capacitor/android
 npx cap add android      # needs Android Studio
 npx @capacitor/assets generate --assetPath resources --iconBackgroundColor "#1F6F54" --splashBackgroundColor "#F4F5F1"   # app icons from resources/icon.png
 npm run cap:sync         # build web app and copy it into the native projects
-npx cap open ios         # or: npx cap open android
+npx cap open android
 ```
