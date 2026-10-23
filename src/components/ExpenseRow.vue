@@ -13,6 +13,10 @@ const iconStyle = computed(() => {
   return { background: c.tint, color: c.ink }
 })
 const title = computed(() => expense.note.trim() || category.value.name)
+const subtitle = computed(() => {
+  const kind = category.value.group === 'monthly' ? 'Monthly bill' : 'Daily'
+  return expense.note.trim() ? `${category.value.name} · ${kind.toLowerCase()}` : kind
+})
 </script>
 
 <template>
@@ -20,7 +24,7 @@ const title = computed(() => expense.note.trim() || category.value.name)
     <span class="icon" :style="iconStyle"><AppIcon :name="category.icon" /></span>
     <span class="text">
       <span class="title">{{ title }}</span>
-      <span class="sub">{{ category.name }}<template v-if="category.group === 'monthly'"> · monthly bill</template></span>
+      <span class="sub">{{ subtitle }}</span>
     </span>
     <span class="amount">{{ formatMoney(expense.amount, currency) }}</span>
   </RouterLink>
