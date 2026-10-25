@@ -34,12 +34,23 @@ const principal = shallowRef<number | ''>(e?.principal ?? '')
 const ratePercent = shallowRef<number | ''>(e?.ratePercent ?? '')
 const invested = shallowRef<number | ''>(e?.invested ?? '')
 const earned = shallowRef<number | ''>(e?.earned ?? '')
+// A deal's profit is entered as an amount or as a percent of what was invested.
+const earnMode = shallowRef<'fixed' | 'percent'>(typeof e?.earnedPercent === 'number' ? 'percent' : 'fixed')
+const earnedPercent = shallowRef<number | ''>(e?.earnedPercent ?? '')
 const start = shallowRef<string>(e?.start ?? todayYmd())
 const end = shallowRef<string>(e?.end ?? '')
 const ongoing = shallowRef<boolean>(type !== 'deal' && !e?.end)
 
 const num = (v: number | '') => (typeof v === 'number' && Number.isFinite(v) ? v : null)
 const round = (n: number) => Math.round(n * 100) / 100
+
+/** The deal's profit as an amount, however it was entered. */
+const profit = computed(() => {
+  if (earnMode.value === 'fixed') return num(earned.value)
+  const i = num(invested.value)
+  const p = num(earnedPercent.value)
+  return i !== null && p !== null ? round((i * p) / 100) : null
+})
 
 const input = computed<IncomeInput | null>(() => {
   const n = name.value.trim()
@@ -61,9 +72,10 @@ const input = computed<IncomeInput | null>(() => {
     }
     case 'deal': {
       const i = num(invested.value)
-      const g = num(earned.value)
+      const g = profit.value
+      const pct = earnMode.value === 'percent' ? num(earnedPercent.value) ?? undefined : undefined
       return i && i > 0 && g !== null && start.value && end.value && end.value >= start.value
-        ? { ...base, type, invested: round(i), earned: round(g), start: start.value, end: end.value }
+        ? { ...base, type, invested: round(i), earned: round(g), earnedPercent: pct, start: start.value, end: end.value }
         : null
     }
     case 'project':
@@ -81,7 +93,7 @@ const preview = computed(() => {
   }
   if (type === 'deal') {
     const i = num(invested.value)
-    const g = num(earned.value)
+    const g = profit.value
     if (!i || g === null || !end.value || end.value < start.value) return ''
     const d = { invested: i, earned: g, start: start.value, end: end.value } as Deal
     const yearly = dealYearlyPercent(d)
@@ -147,10 +159,18 @@ function remove() {
           Amount invested ({{ settings.currency }})
           <input v-model.number="invested" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" required />
         </label>
-        <label class="field">
-          Amount earned, profit ({{ settings.currency }})
-          <input v-model.number="earned" type="number" inputmode="decimal" step="0.01" placeholder="0.00" required />
-        </label>
+        <div class="field">
+          <span class="earn-head">
+            Amount earned, profit
+            <span class="segments" role="group" aria-label="Profit entered as">
+              <button type="button" class="segment" :class="{ 'segment--on': earnMode === 'fixed' }" :aria-pressed="earnMode === 'fixed'" @click="earnMode = 'fixed'">{{ settings.currency }}</button>
+              <button type="button" class="segment" :class="{ 'segment--on': earnMode === 'percent' }" :aria-pressed="earnMode === 'percent'" @click="earnMode = 'percent'">%</button>
+            </span>
+          </span>
+          <input v-if="earnMode === 'fixed'" v-model.number="earned" type="number" inputmode="decimal" step="0.01" placeholder="0.00" aria-label="Profit amount" required />
+          <input v-else v-model.number="earnedPercent" type="number" inputmode="decimal" step="0.1" placeholder="e.g. 20" aria-label="Profit, percent of amount invested" required />
+          <span v-if="earnMode === 'percent' && profit !== null" class="muted earn-hint">{{ earnedPercent }}% of {{ money(num(invested) ?? 0) }} = {{ money(profit) }}</span>
+        </div>
       </template>
 
       <template v-if="type !== 'project'">
@@ -195,5 +215,10 @@ function remove() {
 .check { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; }
 .check input { width: 20px; height: 20px; accent-color: var(--accent); }
 .preview { background: var(--accent-soft); border-color: var(--accent-bar); color: var(--accent-ink); font-size: 14px; font-weight: 700; padding: 12px 14px; border-radius: 16px; }
+.earn-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.segments { display: grid; grid-template-columns: repeat(2, 48px); gap: 4px; background: #E7EAE4; border-radius: 12px; padding: 3px; }
+.segment { height: 30px; border: 0; border-radius: 9px; background: transparent; font-size: 13px; font-weight: 700; color: var(--ink); }
+.segment--on { background: var(--card); box-shadow: 0 1px 3px rgba(21, 32, 27, 0.12); }
+.earn-hint { font-size: 12px; font-weight: 600; }
 .help { font-size: 13px; font-weight: 500; margin-top: -8px; }
 </style>

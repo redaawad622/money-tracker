@@ -16,7 +16,7 @@ Built with **Vue 3 + TypeScript + Vite + Pinia**, packaged as a mobile app with 
 - **Income**: a yearly view of what comes in, split four ways:
   - **Fixed monthly**: salary or any fixed amount every month, with start and optional end
   - **Yearly investments**: an amount invested at the yearly return % you choose (e.g. 25%), counted month by month
-  - **Deals**: amount invested, profit earned, start and end; a yearly deals report (deals closed, invested, earned, return %) counts each deal in the year it ends
+  - **Deals**: amount invested, profit earned (as an amount or a % of what was invested), start and end; a yearly deals report (deals closed, invested, earned, return %) counts each deal in the year it ends
   - **Personal projects**: a cafe, restaurant or side business, logging earnings and costs by date for its net profit per month and year
 - **Rewards** (card on Overview): a reward pot kept apart from the monthly budget, filled by the other apps on the same account:
   - **Azkar Tracker**: each 1000-round of a dhikr finished in the counter

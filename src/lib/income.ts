@@ -39,6 +39,8 @@ export interface Deal extends Base {
   invested: number
   /** Profit the deal made on top of what was invested. */
   earned: number
+  /** Set when the profit was entered as a percent of what was invested; `earned` is worked out from it. */
+  earnedPercent?: number
   start: string
   end: string
 }
