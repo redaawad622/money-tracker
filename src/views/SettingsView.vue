@@ -48,6 +48,13 @@ const logoUrl = `${import.meta.env.BASE_URL}logo.svg`
         <input v-model="settings.includeSubscriptionsInBudget" type="checkbox" />
         Count fixed subscriptions in the monthly budget
       </label>
+      <div class="option">
+        <label class="check">
+          <input v-model="settings.spreadDailyDifference" type="checkbox" />
+          Spread each day's difference over the coming days
+        </label>
+        <span class="muted hint">When a day goes over its daily budget, the extra is split evenly across the days left in the month and taken off their budgets. When a day ends under budget, what's left is split the same way and added to them.</span>
+      </div>
     </section>
     <section v-if="showAccount" class="card account">
       <template v-if="account.user.value">
@@ -102,6 +109,8 @@ const logoUrl = `${import.meta.env.BASE_URL}logo.svg`
 .fields { display: flex; flex-direction: column; gap: 16px; }
 .check { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; min-height: 44px; }
 .check input { width: 20px; height: 20px; accent-color: var(--accent); }
+.option { display: flex; flex-direction: column; gap: 2px; }
+.hint { font-size: 12px; font-weight: 500; line-height: 1.45; padding-left: 30px; }
 .note { font-size: 13px; font-weight: 500; text-align: center; }
 .account { display: flex; flex-direction: column; gap: 12px; }
 .account-row { display: flex; align-items: center; gap: 12px; }
