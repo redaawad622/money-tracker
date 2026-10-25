@@ -18,6 +18,7 @@ const today = todayYmd()
 const money = (n: number) => formatMoney(n, settings.currency)
 
 const summary = computed(() => budget.monthSummary(month.value))
+const limits = computed(() => budget.dailyLimits(month.value))
 const dates = computed(() => monthDates(month.value))
 const pastDates = computed(() => dates.value.filter((d) => d <= today))
 
@@ -32,7 +33,7 @@ function level(amount: number, daily: number): number {
 const cells = computed(() => {
   const lead = mondayIndex(dates.value[0])
   const blanks = Array.from({ length: lead }, (_, i) => ({ key: `b${i}`, blank: true as const }))
-  const days = dates.value.map((date) => {
+  const days = dates.value.map((date, i) => {
     const amount = expenses.totalForDate(date)
     const future = date > today
     return {
@@ -41,7 +42,7 @@ const cells = computed(() => {
       date,
       day: parseYmd(date).getDate(),
       amount: amount ? String(Math.round(amount)) : '',
-      level: future ? 'future' : `l${level(amount, summary.value.dailyBudget)}`,
+      level: future ? 'future' : `l${level(amount, limits.value[i])}`,
       isToday: date === today,
       aria: `${formatDay(date)}, ${future ? 'upcoming' : money(amount)}`,
     }
@@ -57,7 +58,7 @@ const stats = computed(() => {
     average: totals.length ? summary.value.daily / totals.length : 0,
     week: sumMoney(lastSeven),
     max,
-    over: totals.filter((t) => t.amount > summary.value.dailyBudget).length,
+    over: totals.filter((t, i) => t.amount > limits.value[i]).length,
     count: totals.length,
   }
 })

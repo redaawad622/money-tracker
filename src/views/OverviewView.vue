@@ -110,7 +110,7 @@ const recentDays = computed(() =>
         <h2 class="section-title">Daily spending</h2>
         <span class="hint">Avg {{ money(average) }} / day</span>
       </div>
-      <DailyBarChart :bars="bars" :daily-budget="summary.dailyBudget" />
+      <DailyBarChart :bars="bars" :limits="budget.dailyLimits(month)" />
     </section>
 
     <section class="recent">

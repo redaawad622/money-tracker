@@ -3,28 +3,31 @@ import { computed } from 'vue'
 
 export interface DayBar { date: string; day: number; amount: number | null; isToday: boolean }
 
-const { bars, dailyBudget } = defineProps<{ bars: DayBar[]; dailyBudget: number }>()
+/** `limits` holds each day's budget, in the same order as `bars`. */
+const { bars, limits } = defineProps<{ bars: DayBar[]; limits: number[] }>()
 
 const HEIGHT = 112
 
-const scaleMax = computed(() => Math.max(dailyBudget, ...bars.map((b) => b.amount ?? 0), 1))
+const scaleMax = computed(() => Math.max(...limits, ...bars.map((b) => b.amount ?? 0), 1))
 
 const drawn = computed(() =>
-  bars.map((b) => {
-    const tone = b.amount === null ? 'future' : b.isToday ? 'today' : b.amount > dailyBudget ? 'over' : 'normal'
+  bars.map((b, i) => {
+    const limit = limits[i] ?? 0
+    const tone = b.amount === null ? 'future' : b.isToday ? 'today' : b.amount > limit ? 'over' : 'normal'
     const h = b.amount ? Math.max(4, Math.round((b.amount / scaleMax.value) * HEIGHT)) : 4
-    return { date: b.date, height: `${h}px`, tone }
+    return { date: b.date, height: `${h}px`, tone, limit: `${Math.round((limit / scaleMax.value) * HEIGHT)}px` }
   }),
 )
 
-const limitStyle = computed(() => ({ bottom: `${Math.round((dailyBudget / scaleMax.value) * HEIGHT)}px` }))
 const lastDay = computed(() => bars.length)
 </script>
 
 <template>
   <div class="chart" role="img" aria-label="Spending per day this month">
-    <div class="limit" :style="limitStyle" />
-    <div v-for="bar in drawn" :key="bar.date" class="bar" :class="`bar--${bar.tone}`" :style="{ height: bar.height }" />
+    <div v-for="bar in drawn" :key="bar.date" class="col">
+      <div class="bar" :class="`bar--${bar.tone}`" :style="{ height: bar.height }" />
+      <div class="limit" :style="{ bottom: bar.limit }" />
+    </div>
   </div>
   <div class="axis">
     <span>1</span><span>8</span><span>15</span><span>22</span><span>{{ lastDay }}</span>
@@ -37,7 +40,8 @@ const lastDay = computed(() => bars.length)
 </template>
 
 <style scoped>
-.chart { position: relative; height: 112px; display: flex; align-items: flex-end; gap: 3px; }
+.chart { height: 112px; display: flex; align-items: flex-end; }
+.col { position: relative; flex: 1 1 0; height: 100%; display: flex; align-items: flex-end; padding: 0 1.5px; }
 .limit { position: absolute; left: 0; right: 0; border-top: 1px dashed #9AA39D; }
 .bar { flex: 1 1 0; border-radius: 3px; background: var(--accent-bar); }
 .bar--today { background: var(--accent); }
