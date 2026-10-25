@@ -1,15 +1,52 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, shallowRef } from 'vue'
 import AppIcon from '../components/AppIcon.vue'
 import ToggleSwitch from '../components/ToggleSwitch.vue'
 import { useAccount, type Provider } from '../composables/useAccount'
 import { useAppLock } from '../composables/useAppLock'
+import { useIncomeLock } from '../composables/useIncomeLock'
 import { CURRENCIES } from '../lib/money'
 import { useSettingsStore } from '../stores/settings'
 
 const { settings } = useSettingsStore()
 const account = useAccount()
 const lock = useAppLock()
+const income = useIncomeLock()
+const current = shallowRef('')
+const next = shallowRef('')
+const confirm = shallowRef('')
+const pwMessage = shallowRef('')
+const pwError = shallowRef(false)
+const pwBusy = shallowRef(false)
+const MIN = 4
+
+function pwDone(message: string, error = false) {
+  pwMessage.value = message
+  pwError.value = error
+  pwBusy.value = false
+}
+
+async function savePassword() {
+  if (pwBusy.value) return
+  pwBusy.value = true
+  if (income.stored.value && !(await income.unlock(current.value))) return pwDone('Current password is wrong.', true)
+  if (next.value.length < MIN) return pwDone(`Use at least ${MIN} characters.`, true)
+  if (next.value !== confirm.value) return pwDone("The new passwords don't match.", true)
+  const changed = !!income.stored.value
+  await income.setPassword(next.value)
+  current.value = next.value = confirm.value = ''
+  pwDone(changed ? 'Password changed.' : 'Income is now locked with a password.')
+}
+
+async function removePassword() {
+  if (pwBusy.value) return
+  pwBusy.value = true
+  if (!(await income.unlock(current.value))) return pwDone('Current password is wrong.', true)
+  await income.removePassword()
+  current.value = next.value = confirm.value = ''
+  pwDone('Password removed.')
+}
+
 const lockOn = computed({ get: () => lock.enabled.value, set: (v: boolean) => void lock.setEnabled(v) })
 const showAccount = computed(() => account.enabled && (!!account.user.value || !!account.providers.value?.length || account.offline.value))
 const PROVIDER_NAMES: Record<Provider, string> = { apple: 'Apple', google: 'Google' }
@@ -68,6 +105,29 @@ const logoUrl = `${import.meta.env.BASE_URL}logo.svg`
       </div>
       <ToggleSwitch v-model="lockOn" :label="`Lock with ${lock.kind.value}`" />
     </section>
+    <form class="card fields" @submit.prevent="savePassword">
+      <div class="option">
+        <span class="section-title">Income password</span>
+        <span class="muted reward-hint">Asks each time you open Income. Set on this device only.<template v-if="income.canReset"> Forgot it? Face ID can remove it.</template></span>
+      </div>
+      <label v-if="income.stored.value" class="field">
+        Current password
+        <input v-model="current" type="password" autocomplete="current-password" />
+      </label>
+      <label class="field">
+        {{ income.stored.value ? 'New password' : 'Password' }}
+        <input v-model="next" type="password" autocomplete="new-password" :minlength="MIN" />
+      </label>
+      <label class="field">
+        Confirm password
+        <input v-model="confirm" type="password" autocomplete="new-password" />
+      </label>
+      <p v-if="pwMessage" role="status" class="pw-message" :class="{ 'pw-message--error': pwError }">{{ pwMessage }}</p>
+      <div class="account-actions">
+        <button type="submit" class="secondary-btn" :disabled="pwBusy || !next">{{ income.stored.value ? 'Change' : 'Set password' }}</button>
+        <button v-if="income.stored.value" type="button" class="secondary-btn" :disabled="pwBusy || !current" @click="removePassword">Remove</button>
+      </div>
+    </form>
     <section class="card fields">
       <div class="option">
         <span class="section-title">Rewards</span>
@@ -140,6 +200,8 @@ const logoUrl = `${import.meta.env.BASE_URL}logo.svg`
 .lock { display: flex; align-items: center; gap: 12px; }
 .lock-text { flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .lock-title { font-size: 14px; font-weight: 700; }
+.pw-message { font-size: 13px; font-weight: 600; color: var(--accent-ink); }
+.pw-message--error { color: var(--warn-ink); }
 .reward-hint { font-size: 12px; font-weight: 500; line-height: 1.45; }
 .note { font-size: 13px; font-weight: 500; text-align: center; }
 .account { display: flex; flex-direction: column; gap: 12px; }
