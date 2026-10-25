@@ -50,10 +50,10 @@ const logoUrl = `${import.meta.env.BASE_URL}logo.svg`
       </label>
       <div class="option">
         <label class="check">
-          <input v-model="settings.spreadOverspending" type="checkbox" />
-          Spread overspending over the coming days
+          <input v-model="settings.spreadDailyDifference" type="checkbox" />
+          Spread each day's difference over the coming days
         </label>
-        <span class="muted hint">When a day goes over its daily budget, the extra is split evenly across the days left in the month and taken off their budgets.</span>
+        <span class="muted hint">When a day goes over its daily budget, the extra is split evenly across the days left in the month and taken off their budgets. When a day ends under budget, what's left is split the same way and added to them.</span>
       </div>
     </section>
     <section v-if="showAccount" class="card account">

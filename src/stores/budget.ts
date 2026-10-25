@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { daysInMonth, monthDates, monthKeyOf, splitMonthKey } from '../lib/dates'
+import { daysInMonth, monthDates, monthKeyOf, splitMonthKey, todayYmd } from '../lib/dates'
 import { spreadDailyLimits } from '../lib/spread'
 import { useExpensesStore } from './expenses'
 import { useSettingsStore } from './settings'
@@ -31,12 +31,14 @@ export const useBudgetStore = defineStore('budget', () => {
     }
   }
 
-  /** Each day's limit in the month, lowered by earlier overspending when that setting is on. */
+  /** Each day's limit in the month, shifted by earlier days' over- and underspending when that setting is on. */
   function dailyLimits(monthKey: string): number[] {
     const { dailyBudget } = monthSummary(monthKey)
     const dates = monthDates(monthKey)
-    if (!settings.spreadOverspending) return dates.map(() => dailyBudget)
-    return spreadDailyLimits(dailyBudget, dates.map((d) => expenses.totalForDate(d)))
+    if (!settings.spreadDailyDifference) return dates.map(() => dailyBudget)
+    const today = todayYmd()
+    const finished = dates.filter((d) => d < today).length
+    return spreadDailyLimits(dailyBudget, dates.map((d) => expenses.totalForDate(d)), finished)
   }
 
   function limitForDate(date: string): number {

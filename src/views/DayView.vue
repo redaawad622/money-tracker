@@ -27,7 +27,7 @@ const list = computed(() => expenses.forDate(date.value))
 const total = computed(() => expenses.totalForDate(date.value))
 const baseBudget = computed(() => budget.monthSummary(monthKeyOf(date.value)).dailyBudget)
 const dailyBudget = computed(() => budget.limitForDate(date.value))
-const lowered = computed(() => baseBudget.value - dailyBudget.value)
+const shift = computed(() => dailyBudget.value - baseBudget.value)
 const diff = computed(() => dailyBudget.value - total.value)
 const isToday = computed(() => date.value === today)
 
@@ -77,8 +77,8 @@ function back() {
         <AppIcon :name="diff >= 0 ? 'down' : 'up'" :size="14" :stroke-width="2.4" />
         {{ money(Math.abs(diff)) }} {{ diff >= 0 ? 'under' : 'over' }} your daily budget
       </span>
-      <span v-if="lowered >= 0.01" class="muted lowered">
-        Daily budget {{ money(dailyBudget) }}, lowered by {{ money(lowered) }} from earlier overspending
+      <span v-if="Math.abs(shift) >= 0.01" class="muted shift">
+        Daily budget {{ money(dailyBudget) }}, {{ shift < 0 ? 'lowered' : 'raised' }} by {{ money(Math.abs(shift)) }} by earlier days
       </span>
     </section>
 
@@ -123,7 +123,7 @@ function back() {
 .pill { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; border-radius: 99px; padding: 6px 12px; }
 .pill--under { background: var(--accent-soft); color: var(--accent-ink); }
 .pill--over { background: var(--warn-soft); color: var(--warn-ink); }
-.lowered { font-size: 13px; font-weight: 600; }
+.shift { font-size: 13px; font-weight: 600; }
 .split { display: flex; flex-direction: column; gap: 10px; }
 .split-bar { display: flex; height: 12px; border-radius: 99px; overflow: hidden; gap: 2px; }
 .split-row { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; }
