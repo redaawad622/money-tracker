@@ -15,6 +15,15 @@ Built with **Vue 3 + TypeScript + Vite + Pinia**, packaged as a mobile app with 
 - **Fixed**: monthly and every-3-months subscriptions, mark as paid, next due dates, the next 3 months, and a switch to count them in the budget
 - **Settings**: monthly budget and currency
 
+## Account and sync (optional)
+
+Signing in with Google or Apple on **Settings** backs up and syncs expenses, subscriptions and settings through Supabase. Without an account the app works as before, data on the device only. It shares Workout Tracker's Supabase project (table `money_records`, see `supabase/migrations/`), so one sign-in covers both apps.
+
+- Changes upload a few seconds after the last edit, when the app comes back to the front, and on **Sync now**.
+- Merging never deletes local data unless another device deleted that record. An expense edited on two devices is kept twice; a subscription edited on both keeps this device's fields and every paid date.
+- Supabase → Authentication → URL Configuration must list `com.redaawad.moneytracker://auth-callback` (iPhone) and the web origin you serve the app from.
+- Override the project with `VITE_SUPABASE_URL` / `VITE_SUPABASE_KEY`, or set `VITE_SUPABASE_URL=` (empty) to turn accounts off.
+
 ## Develop
 
 ```bash

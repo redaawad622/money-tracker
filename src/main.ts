@@ -8,6 +8,7 @@ import '@fontsource/manrope/800.css'
 import './assets/main.css'
 import App from './App.vue'
 import { router } from './router'
+import { useAccount } from './composables/useAccount'
 import { useExpensesStore } from './stores/expenses'
 import { useSettingsStore } from './stores/settings'
 import { useSubscriptionsStore } from './stores/subscriptions'
@@ -24,6 +25,7 @@ async function start() {
   ])
   app.use(router)
   app.mount('#app')
+  void useAccount().start()
 }
 
 void start()
