@@ -20,11 +20,6 @@ async function submit() {
   password.value = ''
   if (!ok) await nextTick(() => field.value?.focus())
 }
-
-async function reset() {
-  if (!window.confirm('Remove the Income password? You can set a new one in Settings.')) return
-  await lock.resetWithDevice()
-}
 </script>
 
 <template>
@@ -48,7 +43,6 @@ async function reset() {
       <p id="income-lock-error" class="error" role="alert">{{ wrong ? 'Wrong password. Try again.' : '' }}</p>
       <button type="submit" class="primary-btn" :disabled="!password || busy">Unlock</button>
     </form>
-    <button v-if="lock.canReset" type="button" class="link" @click="reset">Forgot it? Remove with Face ID</button>
   </main>
 </template>
 
@@ -63,5 +57,4 @@ async function reset() {
 .form { width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
 .form .field input { text-align: center; }
 .error { min-height: 18px; font-size: 13px; font-weight: 600; color: var(--warn-ink); }
-.link { margin-top: 8px; border: 0; background: none; color: var(--accent); font-size: 13px; font-weight: 700; padding: 10px; }
 </style>

@@ -5,8 +5,7 @@ import { checkPassword, hashPassword, type PasswordHash } from '../lib/password'
 
 // An optional password on the Income section. It asks each time Income is opened from another
 // screen and after the app goes to the background; moving between Income's own pages doesn't ask
-// again. Kept on this device and not synced, like the Face ID switch. On the phone, a forgotten
-// password can be removed with Face ID or the device passcode.
+// again. Kept on this device and not synced, like the Face ID switch.
 
 const KEY = 'incomePassword'
 
@@ -50,31 +49,15 @@ async function removePassword() {
   await saveJson(KEY, null)
 }
 
-/** For a forgotten password: Face ID or the device passcode removes it. Phone only. */
-async function resetWithDevice(): Promise<boolean> {
-  if (!Capacitor.isNativePlatform()) return false
-  try {
-    const { NativeBiometric } = await import('@capgo/capacitor-native-biometric')
-    await NativeBiometric.verifyIdentity({ reason: 'Remove the Income password', title: 'Money Tracker', useFallback: true })
-  } catch {
-    return false
-  }
-  await removePassword()
-  unlocked.value = true
-  return true
-}
-
 export function useIncomeLock() {
   return {
     hasPassword: () => stored.value !== null,
     stored: readonly(stored),
     unlocked: readonly(unlocked),
-    canReset: Capacitor.isNativePlatform(),
     start,
     unlock,
     lock,
     setPassword,
     removePassword,
-    resetWithDevice,
   }
 }

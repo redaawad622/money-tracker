@@ -108,7 +108,7 @@ const logoUrl = `${import.meta.env.BASE_URL}logo.svg`
     <form class="card fields" @submit.prevent="savePassword">
       <div class="option">
         <span class="section-title">Income password</span>
-        <span class="muted reward-hint">Asks each time you open Income. Set on this device only.<template v-if="income.canReset"> Forgot it? Face ID can remove it.</template></span>
+        <span class="muted reward-hint">Asks each time you open Income. Set on this device only.</span>
       </div>
       <label v-if="income.stored.value" class="field">
         Current password
