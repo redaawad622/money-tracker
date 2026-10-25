@@ -3,13 +3,15 @@ import { Capacitor } from '@capacitor/core'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { loadJson, saveJson } from '../lib/storage'
 import { useExpensesStore, type Expense } from '../stores/expenses'
+import { useIncomeStore } from '../stores/income'
 import { useSettingsStore } from '../stores/settings'
 import { useSubscriptionsStore } from '../stores/subscriptions'
+import type { IncomeSource } from '../lib/income'
 import type { Subscription } from '../lib/subscriptions'
 import type { Local, Remote } from '../lib/sync'
 
 // Optional account: signing in with Google or Apple (through Supabase) backs up and syncs this
-// device's expenses, subscriptions and settings. Without one the app works exactly as before,
+// device's expenses, subscriptions, income and settings. Without one the app works exactly as before,
 // data on the device only.
 
 export type Provider = 'google' | 'apple'
@@ -90,10 +92,12 @@ async function syncOnce(c: SupabaseClient, userId: string) {
   // From here to the end of the store updates nothing awaits, so no edit can slip in between.
   const expenses = useExpensesStore()
   const subs = useSubscriptionsStore()
+  const income = useIncomeStore()
   const { settings } = useSettingsStore()
   const local: Local[] = [
     ...expenses.expenses.map((e) => ({ kind: 'expenses' as const, uid: e.id, data: withoutId(e) })),
     ...subs.subscriptions.map((s) => ({ kind: 'subscriptions' as const, uid: s.id, data: withoutId(s) })),
+    ...income.sources.map((s) => ({ kind: 'income' as const, uid: s.id, data: withoutId(s) })),
     { kind: 'settings', uid: 'settings', data: { ...settings } },
   ]
   const p = plan(local, remote, synced)
@@ -102,6 +106,8 @@ async function syncOnce(c: SupabaseClient, userId: string) {
   if (nextExpenses) expenses.expenses = nextExpenses
   const nextSubs = applyOps<Subscription>(subs.subscriptions, 'subscriptions', p.ops)
   if (nextSubs) subs.subscriptions = nextSubs
+  const nextIncome = applyOps<IncomeSource>(income.sources, 'income', p.ops)
+  if (nextIncome) income.sources = nextIncome
   const s = p.ops.find((o) => o.kind === 'settings' && o.op === 'put')
   if (s?.op === 'put') Object.assign(settings, s.data)
 
@@ -219,9 +225,10 @@ async function start() {
   // Changes made by a sync itself are not edits to upload; otherwise each sync would schedule the next.
   const expenses = useExpensesStore()
   const subs = useSubscriptionsStore()
+  const income = useIncomeStore()
   const { settings } = useSettingsStore()
   watch(
-    () => [expenses.expenses, subs.subscriptions, settings],
+    () => [expenses.expenses, subs.subscriptions, income.sources, settings],
     () => {
       if (!running) schedule()
     },

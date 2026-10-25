@@ -72,7 +72,10 @@ const recentDays = computed(() =>
   <main class="page">
     <header class="header">
       <MonthSwitcher :month="month" :can-go-next="!isCurrentMonth" @prev="prev" @next="next" />
-      <AccountButton />
+      <div class="header-actions">
+        <AccountButton />
+        <RouterLink to="/settings" class="icon-btn" aria-label="Settings"><AppIcon name="gear" /></RouterLink>
+      </div>
     </header>
 
     <section class="hero" :class="{ 'hero--over': overBudget }">
@@ -135,6 +138,7 @@ const recentDays = computed(() =>
 
 <style scoped>
 .header { display: flex; align-items: center; justify-content: space-between; min-height: 48px; }
+.header-actions { display: flex; align-items: center; gap: 8px; }
 .hero {
   background: var(--accent); color: #fff; border-radius: 24px; padding: 20px;
   display: flex; flex-direction: column; gap: 14px;

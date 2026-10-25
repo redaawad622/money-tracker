@@ -10,9 +10,10 @@ const LEFT: Tab[] = [
   { to: '/', name: 'overview', label: 'Overview', icon: 'chart' },
   { to: '/calendar', name: 'calendar', label: 'Calendar', icon: 'calendar' },
 ]
+// Settings opens from the gear on Overview, keeping two tabs on each side of the add button.
 const RIGHT: Tab[] = [
   { to: '/fixed', name: 'subscriptions', label: 'Fixed', icon: 'repeat' },
-  { to: '/settings', name: 'settings', label: 'Settings', icon: 'user' },
+  { to: '/income', name: 'income', label: 'Income', icon: 'coins' },
 ]
 
 const route = useRoute()

@@ -24,6 +24,7 @@ const logoUrl = `${import.meta.env.BASE_URL}logo.svg`
 <template>
   <main class="page">
     <header class="header">
+      <RouterLink to="/" class="icon-btn icon-btn--plain" aria-label="Back to overview"><AppIcon name="back" /></RouterLink>
       <h1 class="title">Settings</h1>
     </header>
     <section class="brand">
@@ -99,7 +100,7 @@ const logoUrl = `${import.meta.env.BASE_URL}logo.svg`
 </template>
 
 <style scoped>
-.header { min-height: 48px; display: flex; align-items: center; }
+.header { min-height: 48px; display: flex; align-items: center; gap: 4px; margin-left: -10px; }
 .title { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
 .brand { display: flex; align-items: center; gap: 14px; }
 .brand-logo { border-radius: 14px; }

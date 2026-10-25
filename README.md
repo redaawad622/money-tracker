@@ -13,11 +13,16 @@ Built with **Vue 3 + TypeScript + Vite + Pinia**, packaged as a mobile app with 
 - **Add / edit expense**: keypad, daily categories (breakfast, lunch, gas, car, wife, children, home needs…) and monthly bills (mobile, internet, electricity, water, rent…)
 - **Calendar**: month heatmap with average, last 7 days, highest day and over-budget days
 - **Fixed**: monthly and every-3-months subscriptions, mark as paid, next due dates, the next 3 months, and a switch to count them in the budget
-- **Settings**: monthly budget and currency
+- **Income**: a yearly view of what comes in, split four ways:
+  - **Fixed monthly**: salary or any fixed amount every month, with start and optional end
+  - **Yearly investments**: an amount invested at the yearly return % you choose (e.g. 25%), counted month by month
+  - **Deals**: amount invested, profit earned, start and end; a yearly deals report (deals closed, invested, earned, return %) counts each deal in the year it ends
+  - **Personal projects**: a cafe, restaurant or side business, logging earnings and costs by date for its net profit per month and year
+- **Settings** (gear on Overview): monthly budget and currency
 
 ## Account and sync (optional)
 
-Signing in with Google or Apple on **Settings** backs up and syncs expenses, subscriptions and settings through Supabase. Without an account the app works as before, data on the device only. It shares Workout Tracker's Supabase project (table `money_records`, see `supabase/migrations/`), so one sign-in covers both apps.
+Signing in with Google or Apple on **Settings** backs up and syncs expenses, subscriptions, income and settings through Supabase. Without an account the app works as before, data on the device only. It shares Workout Tracker's Supabase project (table `money_records`, see `supabase/migrations/`), so one sign-in covers both apps.
 
 - Changes upload a few seconds after the last edit, when the app comes back to the front, and on **Sync now**.
 - Merging never deletes local data unless another device deleted that record. An expense edited on two devices is kept twice; a subscription edited on both keeps this device's fields and every paid date.

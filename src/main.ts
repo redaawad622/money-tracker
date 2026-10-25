@@ -10,6 +10,7 @@ import App from './App.vue'
 import { router } from './router'
 import { useAccount } from './composables/useAccount'
 import { useExpensesStore } from './stores/expenses'
+import { useIncomeStore } from './stores/income'
 import { useSettingsStore } from './stores/settings'
 import { useSubscriptionsStore } from './stores/subscriptions'
 
@@ -22,6 +23,7 @@ async function start() {
     useSettingsStore(pinia).hydrate(),
     useExpensesStore(pinia).hydrate(),
     useSubscriptionsStore(pinia).hydrate(),
+    useIncomeStore(pinia).hydrate(),
   ])
   app.use(router)
   app.mount('#app')
