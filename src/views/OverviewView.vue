@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import AccountButton from '../components/AccountButton.vue'
 import AppIcon from '../components/AppIcon.vue'
 import DailyBarChart, { type DayBar } from '../components/DailyBarChart.vue'
 import MonthSwitcher from '../components/MonthSwitcher.vue'
@@ -71,6 +72,7 @@ const recentDays = computed(() =>
   <main class="page">
     <header class="header">
       <MonthSwitcher :month="month" :can-go-next="!isCurrentMonth" @prev="prev" @next="next" />
+      <AccountButton />
     </header>
 
     <section class="hero" :class="{ 'hero--over': overBudget }">
