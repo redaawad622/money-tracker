@@ -25,6 +25,7 @@ const money = (n: number) => formatMoney(n, settings.currency)
 
 const list = computed(() => expenses.forDate(date.value))
 const total = computed(() => expenses.totalForDate(date.value))
+const fromRewards = computed(() => sumMoney(list.value.filter((e) => e.fromRewards).map((e) => e.amount)))
 const baseBudget = computed(() => budget.monthSummary(monthKeyOf(date.value)).dailyBudget)
 const dailyBudget = computed(() => budget.limitForDate(date.value))
 const shift = computed(() => dailyBudget.value - baseBudget.value)
@@ -79,6 +80,7 @@ function back() {
         <AppIcon :name="diff >= 0 ? 'down' : 'up'" :size="14" :stroke-width="2.4" />
         {{ money(Math.abs(diff)) }} {{ diff >= 0 ? 'under' : 'over' }} your daily budget
       </span>
+      <span v-if="fromRewards > 0" class="muted shift">+ {{ money(fromRewards) }} paid from rewards, not counted</span>
       <span v-if="Math.abs(shift) >= 0.01" class="muted shift">
         Daily budget {{ money(dailyBudget) }}, {{ shift < 0 ? 'lowered' : 'raised' }} by {{ money(Math.abs(shift)) }} by earlier days
       </span>

@@ -5,7 +5,8 @@ import { newId } from './id'
 // local record when another device deleted it on purpose, and a record missing from the cloud
 // is uploaded again, never removed here.
 
-export type Kind = 'expenses' | 'subscriptions' | 'settings' | 'income' | 'rewards'
+export const KINDS = ['expenses', 'subscriptions', 'settings', 'income', 'rewards'] as const
+export type Kind = (typeof KINDS)[number]
 
 export interface Remote {
   kind: Kind

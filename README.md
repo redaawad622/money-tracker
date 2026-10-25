@@ -27,7 +27,7 @@ Built with **Vue 3 + TypeScript + Vite + Pinia**, packaged as a mobile app with 
 
 ## Account and sync (optional)
 
-Signing in with Google or Apple on **Settings** backs up and syncs expenses, subscriptions, income and settings through Supabase. Without an account the app works as before, data on the device only. It shares Workout Tracker's Supabase project (table `money_records`, see `supabase/migrations/`), so one sign-in covers both apps. Each sync also reads the Azkar rounds (`azkar_records`, kind `rounds`) and logged workouts (`records`, kind `entries`) on the same account to pay rewards; an app that can't be read leaves its rewards as they are.
+Signing in with Google or Apple on **Settings** backs up and syncs expenses, subscriptions, income and settings through Supabase. Without an account the app works as before, data on the device only. It shares Workout Tracker's Supabase project (table `money_records`, see `supabase/migrations/`), so one sign-in covers both apps. Each sync also reads the Azkar rounds (`azkar_rounds`) and logged workouts (`records`, kind `entries`) on the same account to pay rewards; an app that can't be read leaves its rewards as they are.
 
 - Changes upload a few seconds after the last edit, when the app comes back to the front, and on **Sync now**.
 - Merging never deletes local data unless another device deleted that record. An expense edited on two devices is kept twice; a subscription edited on both keeps this device's fields and every paid date.

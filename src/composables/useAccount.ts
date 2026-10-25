@@ -26,7 +26,7 @@ export type SyncState = 'idle' | 'syncing' | 'error'
 const URL_ = import.meta.env.VITE_SUPABASE_URL ?? 'https://lgbtzvvgaemlpnuktssx.supabase.co'
 const KEY = import.meta.env.VITE_SUPABASE_KEY ?? 'sb_publishable_yatAKSTGeF_d9I0CoTyB_g_iAgC8FMf'
 const TABLE = 'money_records'
-const AZKAR_TABLE = 'azkar_records'
+const AZKAR_TABLE = 'azkar_rounds'
 const WORKOUT_TABLE = 'records'
 
 // The iPhone app gets the sign-in result back on this URL (CFBundleURLTypes in ios/App/App/Info.plist).
@@ -87,18 +87,14 @@ async function pullAll(c: SupabaseClient): Promise<Remote[]> {
   }
 }
 
-// Every live row of one kind in another app's table, a page at a time.
-async function pullKind(c: SupabaseClient, table: string, kind: string, columns: string) {
+// Every live row (of one kind, when given) in another app's table, a page at a time.
+async function pullLive(c: SupabaseClient, table: string, columns: string, kind?: string) {
   const rows: Record<string, any>[] = []
   const page = 1000
   for (let from = 0; ; from += page) {
-    const { data, error } = await c
-      .from(table)
-      .select(columns)
-      .eq('kind', kind)
-      .eq('deleted', false)
-      .order('uid')
-      .range(from, from + page - 1)
+    let q = c.from(table).select(columns).eq('deleted', false)
+    if (kind) q = q.eq('kind', kind)
+    const { data, error } = await q.order('uid').range(from, from + page - 1)
     if (error) throw error
     rows.push(...(data as unknown as Record<string, any>[]))
     if (data.length < page) return rows
@@ -111,8 +107,8 @@ async function readEarned(c: SupabaseClient) {
   const { azkarEarned, workoutEarned } = await import('../lib/rewards')
   const earned: Partial<Record<RewardSource, Earned[]>> = {}
   const [azkar, workout] = await Promise.allSettled([
-    pullKind(c, AZKAR_TABLE, 'rounds', 'uid, data'),
-    pullKind(c, WORKOUT_TABLE, 'entries', 'date:data->>date, source:data->>source'),
+    pullLive(c, AZKAR_TABLE, 'uid, data'),
+    pullLive(c, WORKOUT_TABLE, 'date:data->>date, source:data->>source', 'entries'),
   ])
   if (azkar.status === 'fulfilled') {
     earned.azkar = azkarEarned(azkar.value.filter((r) => r.data?.date).map((r) => ({ ...r.data, uid: r.uid }) as AzkarRound))
@@ -126,9 +122,11 @@ async function readEarned(c: SupabaseClient) {
 const withoutId = <T extends { id: string }>({ id, ...rest }: T) => rest
 
 async function syncOnce(c: SupabaseClient, userId: string) {
-  const { plan, applyOps } = await import('../lib/sync')
+  const { plan, applyOps, KINDS } = await import('../lib/sync')
   const { reconcileRewards } = await import('../lib/rewards')
-  const [remote, earned] = await Promise.all([pullAll(c), readEarned(c)])
+  const [all, earned] = await Promise.all([pullAll(c), readEarned(c)])
+  // Only the kinds this build knows, so a kind added by a later build is never deleted here.
+  const remote = all.filter((r) => (KINDS as readonly string[]).includes(r.kind))
   const synced = await loadJson<Record<string, string>>(SYNCED, {})
 
   // From here to the end of the store updates nothing awaits, so no edit can slip in between.
