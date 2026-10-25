@@ -36,6 +36,12 @@ export const ICONS = {
   pencil: 'M4 20h4L19 9l-4-4L4 16v4z',
   down: 'M12 5v14 M6 13l6 6 6-6',
   up: 'M12 19V5 M6 11l6-6 6 6',
+  wallet: 'M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z M3 7l12-4v4 M16 13.5h.01',
+  trend: 'M3 17l6-6 4 4 8-8 M15 7h6v6',
+  deal: 'M12 3v18 M17 7H9.5a3 3 0 0 0 0 6h5a3 3 0 0 1 0 6H6',
+  store: 'M4 10v10h16V10 M3 4h18l-1 6H4L3 4z M9 20v-5h6v5',
+  coins: 'M4 7a8 3 0 1 0 16 0a8 3 0 1 0-16 0 M4 7v5c0 1.7 3.6 3 8 3s8-1.3 8-3V7 M4 12v5c0 1.7 3.6 3 8 3s8-1.3 8-3v-5',
+  gear: 'M9 12a3 3 0 1 0 6 0a3 3 0 1 0-6 0 M12 2v3 M12 19v3 M4.9 4.9 7 7 M17 17l2.1 2.1 M2 12h3 M19 12h3 M4.9 19.1 7 17 M17 7l2.1-2.1',
 } as const
 
 export type IconName = keyof typeof ICONS

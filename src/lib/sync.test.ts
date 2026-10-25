@@ -51,4 +51,11 @@ describe('sync plan', () => {
     expect(p.ops).toEqual([{ op: 'put', kind: 'subscriptions', uid: 's', data: { amount: 12, paid: ['2026-09-15', '2026-10-15'] } }])
     expect(p.push[0].data).toEqual({ amount: 12, paid: ['2026-09-15', '2026-10-15'] })
   })
+
+  it('keeps project entries added on either device', () => {
+    const e = (id: string) => ({ id, date: '2026-10-01', amount: 100, note: '' })
+    const project = (name: string, entries: object[]): Local => ({ kind: 'income', uid: 'p', data: { type: 'project', name, entries } })
+    const p = plan([project('Cafe', [e('1'), e('2')])], [remoteOf(project('Old', [e('1'), e('3')]))], agreed(project('Old', [e('1')])))
+    expect(p.ops).toEqual([{ op: 'put', kind: 'income', uid: 'p', data: { type: 'project', name: 'Cafe', entries: [e('1'), e('3'), e('2')] } }])
+  })
 })
