@@ -14,7 +14,7 @@ const iconStyle = computed(() => {
 })
 const title = computed(() => expense.note.trim() || category.value.name)
 const subtitle = computed(() => {
-  const kind = category.value.group === 'monthly' ? 'Monthly bill' : 'Daily'
+  const kind = expense.fromRewards ? 'From rewards' : category.value.group === 'monthly' ? 'Monthly bill' : 'Daily'
   return expense.note.trim() ? `${category.value.name} · ${kind.toLowerCase()}` : kind
 })
 </script>

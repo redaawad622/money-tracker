@@ -33,7 +33,9 @@ const isToday = computed(() => date.value === today)
 
 const split = computed(() => {
   const byCat = new Map<string, number[]>()
+  // Paid from the reward pot: not part of the day's budget spending.
   for (const e of list.value) {
+    if (e.fromRewards) continue
     const values = byCat.get(e.categoryId) ?? []
     values.push(e.amount)
     byCat.set(e.categoryId, values)

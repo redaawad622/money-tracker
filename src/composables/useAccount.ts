@@ -4,15 +4,18 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { loadJson, saveJson } from '../lib/storage'
 import { useExpensesStore, type Expense } from '../stores/expenses'
 import { useIncomeStore } from '../stores/income'
+import { useRewardsStore } from '../stores/rewards'
 import { useSettingsStore } from '../stores/settings'
 import { useSubscriptionsStore } from '../stores/subscriptions'
 import type { IncomeSource } from '../lib/income'
+import type { AzkarRound, Earned, Reward, RewardSource } from '../lib/rewards'
 import type { Subscription } from '../lib/subscriptions'
 import type { Local, Remote } from '../lib/sync'
 
 // Optional account: signing in with Google or Apple (through Supabase) backs up and syncs this
-// device's expenses, subscriptions, income and settings. Without one the app works exactly as before,
-// data on the device only.
+// device's expenses, subscriptions, income, rewards and settings. Without one the app works exactly
+// as before, data on the device only. Signed in, it also reads Azkar Tracker's and Workout Tracker's
+// rows on the same account to pay their rewards.
 
 export type Provider = 'google' | 'apple'
 export type SyncState = 'idle' | 'syncing' | 'error'
@@ -23,6 +26,8 @@ export type SyncState = 'idle' | 'syncing' | 'error'
 const URL_ = import.meta.env.VITE_SUPABASE_URL ?? 'https://lgbtzvvgaemlpnuktssx.supabase.co'
 const KEY = import.meta.env.VITE_SUPABASE_KEY ?? 'sb_publishable_yatAKSTGeF_d9I0CoTyB_g_iAgC8FMf'
 const TABLE = 'money_records'
+const AZKAR_TABLE = 'azkar_records'
+const WORKOUT_TABLE = 'records'
 
 // The iPhone app gets the sign-in result back on this URL (CFBundleURLTypes in ios/App/App/Info.plist).
 const NATIVE_REDIRECT = 'com.redaawad.moneytracker://auth-callback'
@@ -82,22 +87,69 @@ async function pullAll(c: SupabaseClient): Promise<Remote[]> {
   }
 }
 
+// Every live row of one kind in another app's table, a page at a time.
+async function pullKind(c: SupabaseClient, table: string, kind: string, columns: string) {
+  const rows: Record<string, any>[] = []
+  const page = 1000
+  for (let from = 0; ; from += page) {
+    const { data, error } = await c
+      .from(table)
+      .select(columns)
+      .eq('kind', kind)
+      .eq('deleted', false)
+      .order('uid')
+      .range(from, from + page - 1)
+    if (error) throw error
+    rows.push(...(data as unknown as Record<string, any>[]))
+    if (data.length < page) return rows
+  }
+}
+
+// What each of the other apps has earned so far. An app that can't be read this time (offline, or
+// its table isn't there) is left out, so its rewards stay as they are.
+async function readEarned(c: SupabaseClient) {
+  const { azkarEarned, workoutEarned } = await import('../lib/rewards')
+  const earned: Partial<Record<RewardSource, Earned[]>> = {}
+  const [azkar, workout] = await Promise.allSettled([
+    pullKind(c, AZKAR_TABLE, 'rounds', 'uid, data'),
+    pullKind(c, WORKOUT_TABLE, 'entries', 'date:data->>date, source:data->>source'),
+  ])
+  if (azkar.status === 'fulfilled') {
+    earned.azkar = azkarEarned(azkar.value.filter((r) => r.data?.date).map((r) => ({ ...r.data, uid: r.uid }) as AzkarRound))
+  }
+  if (workout.status === 'fulfilled') {
+    earned.workout = workoutEarned(workout.value.filter((r) => r.source === 'logged' && r.date).map((r) => r.date as string))
+  }
+  return earned
+}
+
 const withoutId = <T extends { id: string }>({ id, ...rest }: T) => rest
 
 async function syncOnce(c: SupabaseClient, userId: string) {
   const { plan, applyOps } = await import('../lib/sync')
-  const remote = await pullAll(c)
+  const { reconcileRewards } = await import('../lib/rewards')
+  const [remote, earned] = await Promise.all([pullAll(c), readEarned(c)])
   const synced = await loadJson<Record<string, string>>(SYNCED, {})
 
   // From here to the end of the store updates nothing awaits, so no edit can slip in between.
   const expenses = useExpensesStore()
   const subs = useSubscriptionsStore()
   const income = useIncomeStore()
+  const rewards = useRewardsStore()
   const { settings } = useSettingsStore()
+
+  // Rewards another device already paid keep their amount; then add what's newly earned.
+  const known = new Map<string, Reward>()
+  for (const r of remote) if (r.kind === 'rewards' && !r.deleted) known.set(r.uid, { ...(r.data as Omit<Reward, 'id'>), id: r.uid })
+  for (const r of rewards.rewards) known.set(r.id, r)
+  const nextRewards = reconcileRewards([...known.values()], earned, { azkar: settings.azkarReward, workout: settings.workoutReward })
+  if (JSON.stringify(nextRewards) !== JSON.stringify(rewards.rewards)) rewards.rewards = nextRewards
+
   const local: Local[] = [
     ...expenses.expenses.map((e) => ({ kind: 'expenses' as const, uid: e.id, data: withoutId(e) })),
     ...subs.subscriptions.map((s) => ({ kind: 'subscriptions' as const, uid: s.id, data: withoutId(s) })),
     ...income.sources.map((s) => ({ kind: 'income' as const, uid: s.id, data: withoutId(s) })),
+    ...rewards.rewards.map((r) => ({ kind: 'rewards' as const, uid: r.id, data: withoutId(r) })),
     { kind: 'settings', uid: 'settings', data: { ...settings } },
   ]
   const p = plan(local, remote, synced)
@@ -108,6 +160,8 @@ async function syncOnce(c: SupabaseClient, userId: string) {
   if (nextSubs) subs.subscriptions = nextSubs
   const nextIncome = applyOps<IncomeSource>(income.sources, 'income', p.ops)
   if (nextIncome) income.sources = nextIncome
+  const nextPaid = applyOps<Reward>(rewards.rewards, 'rewards', p.ops)
+  if (nextPaid) rewards.rewards = nextPaid
   const s = p.ops.find((o) => o.kind === 'settings' && o.op === 'put')
   if (s?.op === 'put') Object.assign(settings, s.data)
 
@@ -226,9 +280,10 @@ async function start() {
   const expenses = useExpensesStore()
   const subs = useSubscriptionsStore()
   const income = useIncomeStore()
+  const rewards = useRewardsStore()
   const { settings } = useSettingsStore()
   watch(
-    () => [expenses.expenses, subs.subscriptions, income.sources, settings],
+    () => [expenses.expenses, subs.subscriptions, income.sources, rewards.rewards, settings],
     () => {
       if (!running) schedule()
     },

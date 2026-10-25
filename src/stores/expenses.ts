@@ -13,6 +13,8 @@ export interface Expense {
   /** Local date, YYYY-MM-DD */
   date: string
   createdAt: number
+  /** Paid from the reward pot, so it doesn't count against the monthly budget. */
+  fromRewards?: boolean
 }
 
 export type ExpenseInput = Omit<Expense, 'id' | 'createdAt'>
@@ -31,9 +33,10 @@ export const useExpensesStore = defineStore('expenses', () => {
     return map
   })
 
+  // Budget spending per day: expenses paid from the reward pot are left out.
   const dailyTotals = computed(() => {
     const totals = new Map<string, number>()
-    for (const [date, list] of byDate.value) totals.set(date, sumMoney(list.map((e) => e.amount)))
+    for (const [date, list] of byDate.value) totals.set(date, sumMoney(list.filter((e) => !e.fromRewards).map((e) => e.amount)))
     return totals
   })
 

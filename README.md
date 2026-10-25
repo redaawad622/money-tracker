@@ -18,11 +18,16 @@ Built with **Vue 3 + TypeScript + Vite + Pinia**, packaged as a mobile app with 
   - **Yearly investments**: an amount invested at the yearly return % you choose (e.g. 25%), counted month by month
   - **Deals**: amount invested, profit earned, start and end; a yearly deals report (deals closed, invested, earned, return %) counts each deal in the year it ends
   - **Personal projects**: a cafe, restaurant or side business, logging earnings and costs by date for its net profit per month and year
-- **Settings** (gear on Overview): monthly budget and currency
+- **Rewards** (card on Overview): a reward pot kept apart from the monthly budget, filled by the other apps on the same account:
+  - **Azkar Tracker**: each 1000-round of a dhikr finished in the counter
+  - **Workout Tracker**: every 30 days with a logged workout, in total (rest days don't reset it; past workouts count)
+  - Set each reward's amount in Settings (0 turns it off). A reward keeps the amount it was earned at, and an undone round or deleted workout takes its reward back.
+  - Turn on **Pay from rewards** when adding an expense to pay it from the pot; it then doesn't count against the budget.
+- **Settings** (gear on Overview): monthly budget, currency and reward amounts
 
 ## Account and sync (optional)
 
-Signing in with Google or Apple on **Settings** backs up and syncs expenses, subscriptions, income and settings through Supabase. Without an account the app works as before, data on the device only. It shares Workout Tracker's Supabase project (table `money_records`, see `supabase/migrations/`), so one sign-in covers both apps.
+Signing in with Google or Apple on **Settings** backs up and syncs expenses, subscriptions, income and settings through Supabase. Without an account the app works as before, data on the device only. It shares Workout Tracker's Supabase project (table `money_records`, see `supabase/migrations/`), so one sign-in covers both apps. Each sync also reads the Azkar rounds (`azkar_records`, kind `rounds`) and logged workouts (`records`, kind `entries`) on the same account to pay rewards; an app that can't be read leaves its rewards as they are.
 
 - Changes upload a few seconds after the last edit, when the app comes back to the front, and on **Sync now**.
 - Merging never deletes local data unless another device deleted that record. An expense edited on two devices is kept twice; a subscription edited on both keeps this device's fields and every paid date.

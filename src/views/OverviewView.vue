@@ -10,11 +10,13 @@ import { formatMoney } from '../lib/money'
 import { useViewMonth } from '../composables/useViewMonth'
 import { useBudgetStore } from '../stores/budget'
 import { useExpensesStore } from '../stores/expenses'
+import { useRewardsStore } from '../stores/rewards'
 import { useSettingsStore } from '../stores/settings'
 
 const { month, isCurrentMonth, prev, next } = useViewMonth()
 const expenses = useExpensesStore()
 const budget = useBudgetStore()
+const rewards = useRewardsStore()
 const { settings } = useSettingsStore()
 const today = todayYmd()
 
@@ -30,6 +32,9 @@ const overBudget = computed(() => summary.value.left < 0)
 
 const daysLeft = computed(() => (isCurrentMonth.value ? daysBetween(today, dates.value[dates.value.length - 1]) + 1 : 0))
 const perDayLeft = computed(() => (daysLeft.value > 0 ? Math.max(summary.value.left, 0) / daysLeft.value : 0))
+
+const monthRewards = computed(() => rewards.earnedInMonth(month.value))
+const showRewards = computed(() => rewards.rewards.length > 0 || settings.azkarReward > 0 || settings.workoutReward > 0)
 
 const elapsedDays = computed(() => {
   if (isCurrentMonth.value) return parseYmd(today).getDate()
@@ -108,6 +113,15 @@ const recentDays = computed(() =>
       </RouterLink>
     </section>
 
+    <RouterLink v-if="showRewards" to="/rewards" class="card rewards">
+      <span class="rewards-icon"><AppIcon name="gift" /></span>
+      <span class="rewards-text">
+        <span class="rewards-title">Reward pot {{ money(rewards.balance) }}</span>
+        <span class="rewards-sub">{{ monthRewards > 0 ? `+${money(monthRewards)} earned this month` : 'From Azkar and Workout' }}</span>
+      </span>
+      <AppIcon name="forward" :size="18" class="rewards-go" />
+    </RouterLink>
+
     <section class="card">
       <div class="card-head">
         <h2 class="section-title">Daily spending</h2>
@@ -155,6 +169,15 @@ const recentDays = computed(() =>
 .stat-label { font-size: 12px; font-weight: 600; opacity: 0.85; }
 .stat-value { font-size: 17px; font-weight: 700; }
 .hero-fixed { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; opacity: 0.9; color: #fff; }
+.rewards { display: flex; align-items: center; gap: 12px; padding: 12px 14px; }
+.rewards-icon {
+  width: 40px; height: 40px; border-radius: 12px; flex: 0 0 auto; display: flex; align-items: center; justify-content: center;
+  background: var(--accent-soft); color: var(--accent-ink);
+}
+.rewards-text { flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.rewards-title { font-size: 15px; font-weight: 700; }
+.rewards-sub { font-size: 12px; font-weight: 600; color: var(--muted); }
+.rewards-go { color: var(--muted); }
 .card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
 .hint { font-size: 12px; font-weight: 600; color: var(--muted); }
 .link { font-size: 13px; font-weight: 700; color: var(--accent); padding: 6px 0; }
