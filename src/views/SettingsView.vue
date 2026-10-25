@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import AppIcon from '../components/AppIcon.vue'
+import ToggleSwitch from '../components/ToggleSwitch.vue'
 import { useAccount, type Provider } from '../composables/useAccount'
+import { useAppLock } from '../composables/useAppLock'
 import { CURRENCIES } from '../lib/money'
 import { useSettingsStore } from '../stores/settings'
 
 const { settings } = useSettingsStore()
 const account = useAccount()
+const lock = useAppLock()
+const lockOn = computed({ get: () => lock.enabled.value, set: (v: boolean) => void lock.setEnabled(v) })
 const showAccount = computed(() => account.enabled && (!!account.user.value || !!account.providers.value?.length || account.offline.value))
 const PROVIDER_NAMES: Record<Provider, string> = { apple: 'Apple', google: 'Google' }
 
@@ -56,6 +60,13 @@ const logoUrl = `${import.meta.env.BASE_URL}logo.svg`
         </label>
         <span class="muted hint">When a day goes over its daily budget, the extra is split evenly across the days left in the month and taken off their budgets. When a day ends under budget, what's left is split the same way and added to them.</span>
       </div>
+    </section>
+    <section v-if="lock.available.value" class="card lock">
+      <div class="lock-text">
+        <span class="lock-title">Lock with {{ lock.kind.value }}</span>
+        <span class="muted reward-hint">Asks on opening the app and on coming back to it. Your passcode works if {{ lock.kind.value }} doesn't. Set on this phone only.</span>
+      </div>
+      <ToggleSwitch v-model="lockOn" :label="`Lock with ${lock.kind.value}`" />
     </section>
     <section class="card fields">
       <div class="option">
@@ -126,6 +137,9 @@ const logoUrl = `${import.meta.env.BASE_URL}logo.svg`
 .check input { width: 20px; height: 20px; accent-color: var(--accent); }
 .option { display: flex; flex-direction: column; gap: 2px; }
 .hint { font-size: 12px; font-weight: 500; line-height: 1.45; padding-left: 30px; }
+.lock { display: flex; align-items: center; gap: 12px; }
+.lock-text { flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.lock-title { font-size: 14px; font-weight: 700; }
 .reward-hint { font-size: 12px; font-weight: 500; line-height: 1.45; }
 .note { font-size: 13px; font-weight: 500; text-align: center; }
 .account { display: flex; flex-direction: column; gap: 12px; }
