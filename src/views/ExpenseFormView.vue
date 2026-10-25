@@ -4,14 +4,18 @@ import { useRoute, useRouter } from 'vue-router'
 import AmountKeypad from '../components/AmountKeypad.vue'
 import AppIcon from '../components/AppIcon.vue'
 import CategoryPicker from '../components/CategoryPicker.vue'
+import ToggleSwitch from '../components/ToggleSwitch.vue'
 import { categoryById } from '../data/categories'
 import { todayYmd } from '../lib/dates'
+import { formatMoney } from '../lib/money'
 import { useExpensesStore } from '../stores/expenses'
+import { useRewardsStore } from '../stores/rewards'
 import { useSettingsStore } from '../stores/settings'
 
 const route = useRoute()
 const router = useRouter()
 const expenses = useExpensesStore()
+const rewards = useRewardsStore()
 const { settings } = useSettingsStore()
 
 const editing = typeof route.params.id === 'string' ? expenses.get(route.params.id) : undefined
@@ -21,15 +25,19 @@ const amountText = shallowRef(editing ? String(editing.amount) : '0')
 const categoryId = shallowRef(editing?.categoryId ?? 'lunch')
 const note = shallowRef(editing?.note ?? '')
 const date = shallowRef(editing?.date ?? queryDate ?? todayYmd())
+const fromRewards = shallowRef(editing?.fromRewards ?? false)
 
 const amount = computed(() => Number.parseFloat(amountText.value) || 0)
 const canSave = computed(() => amount.value > 0 && date.value !== '')
 const category = computed(() => categoryById(categoryId.value))
 const heading = editing ? 'Edit expense' : 'Add expense'
+// The pot as it would be without this expense, so editing one shows what it can use.
+const potBefore = computed(() => rewards.balance + (editing?.fromRewards ? editing.amount : 0))
+const showRewards = computed(() => fromRewards.value || potBefore.value > 0)
 
 function save() {
   if (!canSave.value) return
-  const input = { amount: Math.round(amount.value * 100) / 100, categoryId: categoryId.value, note: note.value.trim(), date: date.value }
+  const input = { amount: Math.round(amount.value * 100) / 100, categoryId: categoryId.value, note: note.value.trim(), date: date.value, fromRewards: fromRewards.value }
   if (editing) expenses.update(editing.id, input)
   else expenses.add(input)
   void router.replace(`/day/${date.value}`)
@@ -79,6 +87,16 @@ function close() {
       </label>
     </div>
 
+    <div v-if="showRewards" class="rewards">
+      <span class="rewards-text">
+        <span class="rewards-title">Pay from rewards</span>
+        <span class="muted rewards-sub" :class="{ 'rewards-sub--over': fromRewards && amount > potBefore }">
+          {{ formatMoney(potBefore, settings.currency) }} in the pot · not counted in the budget
+        </span>
+      </span>
+      <ToggleSwitch v-model="fromRewards" label="Pay from rewards" />
+    </div>
+
     <AmountKeypad v-model="amountText" />
 
     <button type="button" class="primary-btn" :disabled="!canSave" @click="save">
@@ -106,4 +124,12 @@ function close() {
 .note input, .date input { border: 0; outline: none; background: transparent; font-size: 14px; font-weight: 600; min-width: 0; }
 .note input { flex: 1 1 auto; color: var(--ink); }
 .date { flex: 0 0 auto; }
+.rewards {
+  display: flex; align-items: center; gap: 12px; min-height: 52px;
+  background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 8px 12px;
+}
+.rewards-text { flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.rewards-title { font-size: 14px; font-weight: 700; }
+.rewards-sub { font-size: 12px; font-weight: 600; }
+.rewards-sub--over { color: var(--warn-ink); }
 </style>

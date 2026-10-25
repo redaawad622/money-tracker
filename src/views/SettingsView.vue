@@ -57,6 +57,20 @@ const logoUrl = `${import.meta.env.BASE_URL}logo.svg`
         <span class="muted hint">When a day goes over its daily budget, the extra is split evenly across the days left in the month and taken off their budgets. When a day ends under budget, what's left is split the same way and added to them.</span>
       </div>
     </section>
+    <section class="card fields">
+      <div class="option">
+        <span class="section-title">Rewards</span>
+        <span class="muted reward-hint">Paid into a reward pot, kept apart from the monthly budget. Sign in with the same account in Azkar Tracker and Workout Tracker. Set 0 to turn one off.</span>
+      </div>
+      <label class="field">
+        Each 1,000-round in Azkar
+        <input v-model.number="settings.azkarReward" type="number" inputmode="decimal" min="0" step="5" />
+      </label>
+      <label class="field">
+        Every 30 workout days
+        <input v-model.number="settings.workoutReward" type="number" inputmode="decimal" min="0" step="10" />
+      </label>
+    </section>
     <section v-if="showAccount" class="card account">
       <template v-if="account.user.value">
         <div class="account-row">
@@ -112,6 +126,7 @@ const logoUrl = `${import.meta.env.BASE_URL}logo.svg`
 .check input { width: 20px; height: 20px; accent-color: var(--accent); }
 .option { display: flex; flex-direction: column; gap: 2px; }
 .hint { font-size: 12px; font-weight: 500; line-height: 1.45; padding-left: 30px; }
+.reward-hint { font-size: 12px; font-weight: 500; line-height: 1.45; }
 .note { font-size: 13px; font-weight: 500; text-align: center; }
 .account { display: flex; flex-direction: column; gap: 12px; }
 .account-row { display: flex; align-items: center; gap: 12px; }

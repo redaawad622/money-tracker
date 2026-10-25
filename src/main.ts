@@ -11,6 +11,7 @@ import { router } from './router'
 import { useAccount } from './composables/useAccount'
 import { useExpensesStore } from './stores/expenses'
 import { useIncomeStore } from './stores/income'
+import { useRewardsStore } from './stores/rewards'
 import { useSettingsStore } from './stores/settings'
 import { useSubscriptionsStore } from './stores/subscriptions'
 
@@ -24,6 +25,7 @@ async function start() {
     useExpensesStore(pinia).hydrate(),
     useSubscriptionsStore(pinia).hydrate(),
     useIncomeStore(pinia).hydrate(),
+    useRewardsStore(pinia).hydrate(),
   ])
   app.use(router)
   app.mount('#app')
