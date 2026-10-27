@@ -11,6 +11,7 @@ Built with **Vue 3 + TypeScript + Vite + Pinia**, packaged as a mobile app with 
 - **Overview**: month total against your budget, what's left, per-day allowance, daily bar chart, recent days
 - **Day**: one day's expenses, category split, under/over the daily budget
 - **Add / edit expense**: keypad, daily categories (breakfast, lunch, gas, car, wife, children, home needs…) and monthly bills (mobile, internet, electricity, water, rent…)
+- **Monthly report** (card on Overview): spent against the budget, days over and under the daily budget, spending by category with the change from last month, fixed subscriptions due, the month's income and what was saved (asks for the Income password if one is set), and a side-by-side with the previous month
 - **Calendar**: month heatmap with average, last 7 days, highest day and over-budget days
 - **Fixed**: monthly and every-3-months subscriptions, mark as paid, next due dates, the next 3 months, and a switch to count them in the budget
 - **Income**: a yearly view of what comes in, split four ways:

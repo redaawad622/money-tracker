@@ -113,6 +113,15 @@ const recentDays = computed(() =>
       </RouterLink>
     </section>
 
+    <RouterLink :to="{ path: '/report', query: $route.query }" class="card rewards">
+      <span class="rewards-icon"><AppIcon name="report" /></span>
+      <span class="rewards-text">
+        <span class="rewards-title">Monthly report</span>
+        <span class="rewards-sub">Categories, days, income and last month</span>
+      </span>
+      <AppIcon name="forward" :size="18" class="rewards-go" />
+    </RouterLink>
+
     <RouterLink v-if="showRewards" to="/rewards" class="card rewards">
       <span class="rewards-icon"><AppIcon name="gift" /></span>
       <span class="rewards-text">
