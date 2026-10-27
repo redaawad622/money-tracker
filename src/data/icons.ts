@@ -45,6 +45,7 @@ export const ICONS = {
   gift: 'M3 8h18v4H3z M5 12v9h14v-9 M12 8v13 M12 8c-1.5-3-5-4-5-1.5S10 8 12 8z M12 8c1.5-3 5-4 5-1.5S14 8 12 8z',
   beads: 'M12 3a1.5 1.5 0 1 0 0 3a1.5 1.5 0 1 0 0-3 M17.5 6a1.5 1.5 0 1 0 0 3a1.5 1.5 0 1 0 0-3 M6.5 6a1.5 1.5 0 1 0 0 3a1.5 1.5 0 1 0 0-3 M19 11.5a1.5 1.5 0 1 0 0 3a1.5 1.5 0 1 0 0-3 M5 11.5a1.5 1.5 0 1 0 0 3a1.5 1.5 0 1 0 0-3 M12 17v4 M10 21h4',
   dumbbell: 'M6 7v10 M18 7v10 M3 9.5v5 M21 9.5v5 M6 12h12',
+  report: 'M6 3h9l4 4v14H6z M14 3v5h5 M9 17v-3 M12 17v-6 M15 17v-4',
 } as const
 
 export type IconName = keyof typeof ICONS

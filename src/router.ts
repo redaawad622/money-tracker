@@ -17,6 +17,7 @@ export const router = createRouter({
     { path: '/income/new/:type', name: 'new-income', component: () => import('./views/IncomeFormView.vue') },
     { path: '/income/project/:id', name: 'project', component: () => import('./views/ProjectView.vue') },
     { path: '/income/:id', name: 'edit-income', component: () => import('./views/IncomeFormView.vue') },
+    { path: '/report', name: 'report', component: () => import('./views/ReportView.vue') },
     { path: '/rewards', name: 'rewards', component: () => import('./views/RewardsView.vue') },
     { path: '/settings', name: 'settings', component: () => import('./views/SettingsView.vue'), meta: { tabs: true } },
     { path: '/:pathMatch(.*)*', redirect: '/' },

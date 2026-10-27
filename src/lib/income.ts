@@ -172,3 +172,27 @@ export function monthlyRecurring(sources: IncomeSource[], monthKey: string): num
   }
   return sumMoney(values)
 }
+
+export interface MonthIncome {
+  salary: number
+  investments: number
+  deals: number
+  projects: number
+  total: number
+}
+
+/** What came in during one month: salaries and investment returns running that month, deals ending in it, and project net. */
+export function monthIncome(sources: IncomeSource[], monthKey: string): MonthIncome {
+  const salary: number[] = []
+  const investments: number[] = []
+  const deals: number[] = []
+  const projects: number[] = []
+  for (const s of sources) {
+    if (s.type === 'salary' && isActiveInMonth(s.start, s.end, monthKey)) salary.push(s.amount)
+    if (s.type === 'investment' && isActiveInMonth(s.start, s.end, monthKey)) investments.push(investmentMonthlyReturn(s))
+    if (s.type === 'deal' && monthKeyOf(s.end) === monthKey) deals.push(s.earned)
+    if (s.type === 'project') for (const e of s.entries) if (monthKeyOf(e.date) === monthKey) projects.push(e.amount)
+  }
+  const out = { salary: sumMoney(salary), investments: sumMoney(investments), deals: sumMoney(deals), projects: sumMoney(projects) }
+  return { ...out, total: sumMoney([out.salary, out.investments, out.deals, out.projects]) }
+}
