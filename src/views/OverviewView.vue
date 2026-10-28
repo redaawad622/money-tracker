@@ -9,8 +9,10 @@ import { daysBetween, formatDayMonth, monthDates, parseYmd, todayYmd, weekdaySho
 import { formatMoney } from '../lib/money'
 import { dueSoon, whenDue } from '../lib/reminders'
 import { useViewMonth } from '../composables/useViewMonth'
+import { useAccountsStore } from '../stores/accounts'
 import { useBudgetStore } from '../stores/budget'
 import { useExpensesStore } from '../stores/expenses'
+import { useGoalsStore } from '../stores/goals'
 import { useRewardsStore } from '../stores/rewards'
 import { useSettingsStore } from '../stores/settings'
 import { useSubscriptionsStore } from '../stores/subscriptions'
@@ -20,6 +22,8 @@ const expenses = useExpensesStore()
 const budget = useBudgetStore()
 const rewards = useRewardsStore()
 const subs = useSubscriptionsStore()
+const accounts = useAccountsStore()
+const goals = useGoalsStore()
 const { settings } = useSettingsStore()
 const today = todayYmd()
 
@@ -163,6 +167,17 @@ const recentDays = computed(() =>
       </span>
     </RouterLink>
 
+    <div v-if="accounts.visible.length || goals.goals.length" class="tiles">
+      <RouterLink v-if="accounts.visible.length" to="/accounts" class="card tile">
+        <span class="tile-head"><AppIcon name="wallet" :size="18" />Accounts</span>
+        <span class="tile-value">{{ money(accounts.total) }}</span>
+      </RouterLink>
+      <RouterLink v-if="goals.goals.length" to="/goals" class="card tile">
+        <span class="tile-head"><AppIcon name="target" :size="18" />Goals</span>
+        <span class="tile-value">{{ money(goals.totalSaved) }}</span>
+      </RouterLink>
+    </div>
+
     <RouterLink v-if="showRewards" to="/rewards" class="card rewards">
       <span class="rewards-icon"><AppIcon name="gift" /></span>
       <span class="rewards-text">
@@ -234,6 +249,10 @@ const recentDays = computed(() =>
 .due-name { flex: 1 1 auto; font-weight: 700; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .due-when { font-size: 12px; font-weight: 600; color: var(--muted); }
 .due-amount { font-weight: 700; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 10px; }
+.tile { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; min-width: 0; }
+.tile-head { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--muted); }
+.tile-value { font-size: 17px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rewards { display: flex; align-items: center; gap: 12px; padding: 12px 14px; }
 .rewards-icon {
   width: 40px; height: 40px; border-radius: 12px; flex: 0 0 auto; display: flex; align-items: center; justify-content: center;

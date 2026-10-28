@@ -27,6 +27,9 @@ Built with **Vue 3 + TypeScript + Vite + Pinia**, packaged as a mobile app with 
 - **Due soon** (Overview): unpaid fixed subscriptions due in the next few days
 - **Bill reminders** (iPhone, Settings): a notification at 9:00 on the day, or 1, 2, 3 or 7 days before, for each unpaid fixed subscription; tapping it opens Fixed
 - **Categories** (Settings): add your own, rename built-in ones, change icon and colour, or hide them from the picker (past expenses keep them). Synced with the rest
+- **Accounts** (Settings, or the card on Overview): cash, bank accounts, cards and wallets (InstaPay, Vodafone Cash…). Each starts from the balance you type; expenses paid with it take money out, and **Move money** records transfers between accounts or money coming in (salary, gifts). Transfers never count as spending. **Set balance** corrects an account to what's really in it
+- **Expense details**: the store (suggested from past ones), the account it was paid with (defaults to the last one used), and a receipt photo. Photos stay on the device that took them and aren't synced
+- **Savings goals** (Settings, or the card on Overview): a target and optional date, money put aside or taken out, and how much a month reaches the target on time. Kept apart from the budget
 - **Export** (Settings): expenses as CSV, or a full JSON backup of everything; the backup asks for the Income password if one is set
 - **Settings** (gear on Overview): monthly budget, currency and reward amounts
 - **Income password** (Settings): asks each time Income is opened from another screen and after the app goes to the background. Stored on the device as a salted PBKDF2 hash, not synced.

@@ -2,21 +2,25 @@ import { nextTick, readonly, ref, watch } from 'vue'
 import { Capacitor } from '@capacitor/core'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { loadJson, saveJson } from '../lib/storage'
+import { useAccountsStore } from '../stores/accounts'
 import { useCategoriesStore } from '../stores/categories'
 import { useExpensesStore, type Expense } from '../stores/expenses'
+import { useGoalsStore } from '../stores/goals'
 import { useIncomeStore } from '../stores/income'
 import { useRewardsStore } from '../stores/rewards'
 import { useSettingsStore } from '../stores/settings'
 import { useSubscriptionsStore } from '../stores/subscriptions'
 import type { CategoryEdit } from '../data/categories'
+import type { Account, Transfer } from '../lib/accounts'
+import type { Goal } from '../lib/goals'
 import type { IncomeSource } from '../lib/income'
 import type { AzkarRound, Earned, Reward, RewardSource } from '../lib/rewards'
 import type { Subscription } from '../lib/subscriptions'
 import type { Local, Remote } from '../lib/sync'
 
 // Optional account: signing in with Google or Apple (through Supabase) backs up and syncs this
-// device's expenses, subscriptions, income, rewards, categories and settings. Without one the app
-// works exactly as before, data on the device only. Signed in, it also reads Azkar Tracker's and
+// device's expenses, subscriptions, income, rewards, categories, accounts, transfers, goals and
+// settings (not receipt photos). Without one the app works exactly as before, data on the device only. Signed in, it also reads Azkar Tracker's and
 // Workout Tracker's rows on the same account to pay their rewards.
 
 export type Provider = 'google' | 'apple'
@@ -137,6 +141,8 @@ async function syncOnce(c: SupabaseClient, userId: string) {
   const income = useIncomeStore()
   const rewards = useRewardsStore()
   const categories = useCategoriesStore()
+  const accounts = useAccountsStore()
+  const goals = useGoalsStore()
   const { settings } = useSettingsStore()
 
   // Rewards another device already paid keep their amount; then add what's newly earned.
@@ -152,6 +158,9 @@ async function syncOnce(c: SupabaseClient, userId: string) {
     ...income.sources.map((s) => ({ kind: 'income' as const, uid: s.id, data: withoutId(s) })),
     ...rewards.rewards.map((r) => ({ kind: 'rewards' as const, uid: r.id, data: withoutId(r) })),
     ...categories.edits.map((c) => ({ kind: 'categories' as const, uid: c.id, data: withoutId(c) })),
+    ...accounts.accounts.map((a) => ({ kind: 'accounts' as const, uid: a.id, data: withoutId(a) })),
+    ...accounts.transfers.map((t) => ({ kind: 'transfers' as const, uid: t.id, data: withoutId(t) })),
+    ...goals.goals.map((g) => ({ kind: 'goals' as const, uid: g.id, data: withoutId(g) })),
     { kind: 'settings', uid: 'settings', data: { ...settings } },
   ]
   const p = plan(local, remote, synced)
@@ -166,6 +175,12 @@ async function syncOnce(c: SupabaseClient, userId: string) {
   if (nextPaid) rewards.rewards = nextPaid
   const nextCategories = applyOps<CategoryEdit>(categories.edits, 'categories', p.ops)
   if (nextCategories) categories.edits = nextCategories
+  const nextAccounts = applyOps<Account>(accounts.accounts, 'accounts', p.ops)
+  if (nextAccounts) accounts.accounts = nextAccounts
+  const nextTransfers = applyOps<Transfer>(accounts.transfers, 'transfers', p.ops)
+  if (nextTransfers) accounts.transfers = nextTransfers
+  const nextGoals = applyOps<Goal>(goals.goals, 'goals', p.ops)
+  if (nextGoals) goals.goals = nextGoals
   const s = p.ops.find((o) => o.kind === 'settings' && o.op === 'put')
   if (s?.op === 'put') Object.assign(settings, s.data)
 
@@ -286,9 +301,11 @@ async function start() {
   const income = useIncomeStore()
   const rewards = useRewardsStore()
   const categories = useCategoriesStore()
+  const accounts = useAccountsStore()
+  const goals = useGoalsStore()
   const { settings } = useSettingsStore()
   watch(
-    () => [expenses.expenses, subs.subscriptions, income.sources, rewards.rewards, categories.edits, settings],
+    () => [expenses.expenses, subs.subscriptions, income.sources, rewards.rewards, categories.edits, accounts.accounts, accounts.transfers, goals.goals, settings],
     () => {
       if (!running) schedule()
     },

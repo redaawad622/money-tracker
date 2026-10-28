@@ -14,15 +14,16 @@ describe('expensesCsv', () => {
   it('writes a header and one row per expense, oldest first', () => {
     const csv = expensesCsv(
       [
-        { id: '2', amount: 120, categoryId: 'rent', note: '', date: '2026-10-05', createdAt: 2 },
+        { id: '2', amount: 120, categoryId: 'rent', note: '', date: '2026-10-05', createdAt: 2, store: 'Landlord', accountId: 'bank' },
         { id: '1', amount: 35.5, categoryId: 'lunch', note: 'with Ali, office', date: '2026-10-01', createdAt: 1, fromRewards: true },
       ],
       byId,
+      (id) => (id === 'bank' ? 'CIB' : ''),
     )
     expect(csv.split('\r\n')).toEqual([
-      'Date,Category,Type,Amount,Note,Paid from rewards',
-      '2026-10-01,Lunch,Daily,35.50,"with Ali, office",yes',
-      '2026-10-05,Rent,Monthly bill,120.00,,',
+      'Date,Category,Type,Amount,Note,Store,Paid with,Paid from rewards',
+      '2026-10-01,Lunch,Daily,35.50,"with Ali, office",,,yes',
+      '2026-10-05,Rent,Monthly bill,120.00,,Landlord,CIB,',
       '',
     ])
   })

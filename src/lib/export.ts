@@ -13,13 +13,14 @@ export function toCsv(rows: (string | number)[][]): string {
 }
 
 /** One row per expense, oldest first. */
-export function expensesCsv(expenses: Expense[], categoryById: (id: string) => Category): string {
+export function expensesCsv(expenses: Expense[], categoryById: (id: string) => Category, accountName: (id: string) => string = () => ''): string {
   const sorted = [...expenses].sort((a, b) => a.date.localeCompare(b.date) || a.createdAt - b.createdAt)
   return toCsv([
-    ['Date', 'Category', 'Type', 'Amount', 'Note', 'Paid from rewards'],
+    ['Date', 'Category', 'Type', 'Amount', 'Note', 'Store', 'Paid with', 'Paid from rewards'],
     ...sorted.map((e) => {
       const c = categoryById(e.categoryId)
-      return [e.date, c.name, c.group === 'monthly' ? 'Monthly bill' : 'Daily', e.amount.toFixed(2), e.note, e.fromRewards ? 'yes' : '']
+      const type = c.group === 'monthly' ? 'Monthly bill' : 'Daily'
+      return [e.date, c.name, type, e.amount.toFixed(2), e.note, e.store ?? '', e.accountId ? accountName(e.accountId) : '', e.fromRewards ? 'yes' : '']
     }),
   ])
 }

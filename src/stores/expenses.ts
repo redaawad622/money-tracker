@@ -15,6 +15,12 @@ export interface Expense {
   createdAt: number
   /** Paid from the reward pot, so it doesn't count against the monthly budget. */
   fromRewards?: boolean
+  /** Where it was bought. */
+  store?: string
+  /** The account (cash, card, wallet…) it was paid with. */
+  accountId?: string
+  /** File name of the receipt photo, kept on this device only (see lib/receipts). */
+  receipt?: string
 }
 
 export type ExpenseInput = Omit<Expense, 'id' | 'createdAt'>
