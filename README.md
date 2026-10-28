@@ -23,6 +23,11 @@ Built with **Vue 3 + TypeScript + Vite + Pinia**, packaged as a mobile app with 
   - **Workout Tracker**: every 30 days with a logged workout, in total (rest days don't reset it; past workouts count)
   - Set each reward's amount in Settings (0 turns it off). A reward keeps the amount it was earned at, and an undone round or deleted workout takes its reward back.
   - Turn on **Pay from rewards** when adding an expense to pay it from the pot; it then doesn't count against the budget.
+- **Budget warning** (Overview): once the month passes a share of the budget (80% by default, set in Settings, or off), a card says how much is used and what's left per day, and flags a day that went over its own budget
+- **Due soon** (Overview): unpaid fixed subscriptions due in the next few days
+- **Bill reminders** (iPhone, Settings): a notification at 9:00 on the day, or 1, 2, 3 or 7 days before, for each unpaid fixed subscription; tapping it opens Fixed
+- **Categories** (Settings): add your own, rename built-in ones, change icon and colour, or hide them from the picker (past expenses keep them). Synced with the rest
+- **Export** (Settings): expenses as CSV, or a full JSON backup of everything; the backup asks for the Income password if one is set
 - **Settings** (gear on Overview): monthly budget, currency and reward amounts
 - **Income password** (Settings): asks each time Income is opened from another screen and after the app goes to the background. Stored on the device as a salted PBKDF2 hash, not synced.
 - **Face ID lock** (iPhone): asks for Face ID on opening the app and on coming back to it, with the passcode as fallback. On by default; turn it off in Settings (kept per phone, not synced).

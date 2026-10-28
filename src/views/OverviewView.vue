@@ -5,18 +5,21 @@ import AppIcon from '../components/AppIcon.vue'
 import DailyBarChart, { type DayBar } from '../components/DailyBarChart.vue'
 import MonthSwitcher from '../components/MonthSwitcher.vue'
 import { categoryById } from '../data/categories'
-import { daysBetween, monthDates, parseYmd, todayYmd, weekdayShort } from '../lib/dates'
+import { daysBetween, formatDayMonth, monthDates, parseYmd, todayYmd, weekdayShort } from '../lib/dates'
 import { formatMoney } from '../lib/money'
+import { dueSoon, whenDue } from '../lib/reminders'
 import { useViewMonth } from '../composables/useViewMonth'
 import { useBudgetStore } from '../stores/budget'
 import { useExpensesStore } from '../stores/expenses'
 import { useRewardsStore } from '../stores/rewards'
 import { useSettingsStore } from '../stores/settings'
+import { useSubscriptionsStore } from '../stores/subscriptions'
 
 const { month, isCurrentMonth, prev, next } = useViewMonth()
 const expenses = useExpensesStore()
 const budget = useBudgetStore()
 const rewards = useRewardsStore()
+const subs = useSubscriptionsStore()
 const { settings } = useSettingsStore()
 const today = todayYmd()
 
@@ -32,6 +35,34 @@ const overBudget = computed(() => summary.value.left < 0)
 
 const daysLeft = computed(() => (isCurrentMonth.value ? daysBetween(today, dates.value[dates.value.length - 1]) + 1 : 0))
 const perDayLeft = computed(() => (daysLeft.value > 0 ? Math.max(summary.value.left, 0) / daysLeft.value : 0))
+
+// A nudge before the month runs out: the share of the budget spent, and today against its own limit.
+const warning = computed(() => {
+  if (!isCurrentMonth.value || overBudget.value || summary.value.budget <= 0) return null
+  const lines: string[] = []
+  const used = Math.round((summary.value.spent / summary.value.budget) * 100)
+  const threshold = settings.budgetWarningPercent
+  if (threshold > 0 && used >= threshold) {
+    const days = `${daysLeft.value} ${daysLeft.value === 1 ? 'day' : 'days'}`
+    lines.push(`You've used ${used}% of this month's budget with ${days} left. That's ${money(perDayLeft.value)} a day from here.`)
+  }
+  const todaySpent = expenses.totalForDate(today)
+  const todayLimit = budget.limitForDate(today)
+  if (threshold > 0 && todaySpent > todayLimit) lines.push(`Today is ${money(todaySpent - todayLimit)} over its daily budget.`)
+  return lines.length ? lines : null
+})
+
+const DUE_SOON_DAYS = 3
+const billsDueSoon = computed(() =>
+  isCurrentMonth.value
+    ? dueSoon(subs.subscriptions, today, Math.max(DUE_SOON_DAYS, settings.billReminders ? settings.billReminderDays : 0)).map(({ sub, date }) => ({
+        key: `${sub.id}:${date}`,
+        name: sub.name,
+        when: daysBetween(today, date) <= 1 ? whenDue(daysBetween(today, date)) : formatDayMonth(date),
+        amount: money(sub.amount),
+      }))
+    : [],
+)
 
 const monthRewards = computed(() => rewards.earnedInMonth(month.value))
 const showRewards = computed(() => rewards.rewards.length > 0 || settings.azkarReward > 0 || settings.workoutReward > 0)
@@ -113,6 +144,25 @@ const recentDays = computed(() =>
       </RouterLink>
     </section>
 
+    <section v-if="warning" class="card warning" role="status">
+      <span class="warning-icon"><AppIcon name="trend" /></span>
+      <span class="warning-text">
+        <span v-for="line in warning" :key="line">{{ line }}</span>
+      </span>
+    </section>
+
+    <RouterLink v-if="billsDueSoon.length" to="/fixed" class="card due">
+      <span class="due-head">
+        <span class="section-title">Due soon</span>
+        <AppIcon name="forward" :size="18" class="rewards-go" />
+      </span>
+      <span v-for="b in billsDueSoon" :key="b.key" class="due-row">
+        <span class="due-name">{{ b.name }}</span>
+        <span class="due-when">{{ b.when }}</span>
+        <span class="due-amount">{{ b.amount }}</span>
+      </span>
+    </RouterLink>
+
     <RouterLink v-if="showRewards" to="/rewards" class="card rewards">
       <span class="rewards-icon"><AppIcon name="gift" /></span>
       <span class="rewards-text">
@@ -169,6 +219,21 @@ const recentDays = computed(() =>
 .stat-label { font-size: 12px; font-weight: 600; opacity: 0.85; }
 .stat-value { font-size: 17px; font-weight: 700; }
 .hero-fixed { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; opacity: 0.9; color: #fff; }
+.warning {
+  display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px;
+  background: var(--warn-soft); border-color: #F2D2B4; color: var(--warn-ink);
+}
+.warning-icon {
+  width: 36px; height: 36px; border-radius: 11px; flex: 0 0 auto; display: flex; align-items: center; justify-content: center;
+  background: #fff; color: var(--warn-ink);
+}
+.warning-text { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600; line-height: 1.45; padding-top: 2px; }
+.due { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; }
+.due-head { display: flex; align-items: center; justify-content: space-between; }
+.due-row { display: flex; align-items: baseline; gap: 8px; font-size: 14px; }
+.due-name { flex: 1 1 auto; font-weight: 700; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.due-when { font-size: 12px; font-weight: 600; color: var(--muted); }
+.due-amount { font-weight: 700; }
 .rewards { display: flex; align-items: center; gap: 12px; padding: 12px 14px; }
 .rewards-icon {
   width: 40px; height: 40px; border-radius: 12px; flex: 0 0 auto; display: flex; align-items: center; justify-content: center;
