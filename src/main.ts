@@ -12,8 +12,10 @@ import { useAccount } from './composables/useAccount'
 import { useAppLock } from './composables/useAppLock'
 import { useBillReminders } from './composables/useBillReminders'
 import { useIncomeLock } from './composables/useIncomeLock'
+import { useAccountsStore } from './stores/accounts'
 import { useCategoriesStore } from './stores/categories'
 import { useExpensesStore } from './stores/expenses'
+import { useGoalsStore } from './stores/goals'
 import { useIncomeStore } from './stores/income'
 import { useRewardsStore } from './stores/rewards'
 import { useSettingsStore } from './stores/settings'
@@ -31,6 +33,8 @@ async function start() {
     useIncomeStore(pinia).hydrate(),
     useRewardsStore(pinia).hydrate(),
     useCategoriesStore(pinia).hydrate(),
+    useAccountsStore(pinia).hydrate(),
+    useGoalsStore(pinia).hydrate(),
     useAppLock().start(),
     useIncomeLock().start(),
   ])

@@ -15,7 +15,9 @@ const iconStyle = computed(() => {
 const title = computed(() => expense.note.trim() || category.value.name)
 const subtitle = computed(() => {
   const kind = expense.fromRewards ? 'From rewards' : category.value.group === 'monthly' ? 'Monthly bill' : 'Daily'
-  return expense.note.trim() ? `${category.value.name} · ${kind.toLowerCase()}` : kind
+  const parts = [expense.note.trim() ? `${category.value.name} · ${kind.toLowerCase()}` : kind]
+  if (expense.store) parts.push(expense.store)
+  return parts.join(' · ')
 })
 </script>
 
@@ -24,7 +26,7 @@ const subtitle = computed(() => {
     <span class="icon" :style="iconStyle"><AppIcon :name="category.icon" /></span>
     <span class="text">
       <span class="title">{{ title }}</span>
-      <span class="sub">{{ subtitle }}</span>
+      <span class="sub">{{ subtitle }}<AppIcon v-if="expense.receipt" name="camera" :size="13" class="sub-icon" /></span>
     </span>
     <span class="amount">{{ formatMoney(expense.amount, currency) }}</span>
   </RouterLink>
@@ -36,6 +38,7 @@ const subtitle = computed(() => {
 .icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; }
 .text { flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .title { font-size: 15px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sub { font-size: 12px; font-weight: 500; color: var(--muted); }
+.sub { font-size: 12px; font-weight: 500; color: var(--muted); display: flex; align-items: center; gap: 4px; overflow: hidden; white-space: nowrap; }
+.sub-icon { flex: 0 0 auto; }
 .amount { font-size: 15px; font-weight: 700; }
 </style>

@@ -11,8 +11,10 @@ import { todayYmd } from '../lib/dates'
 import { backupJson, expensesCsv } from '../lib/export'
 import { CURRENCIES } from '../lib/money'
 import { saveTextFile } from '../lib/saveFile'
+import { useAccountsStore } from '../stores/accounts'
 import { useCategoriesStore } from '../stores/categories'
 import { useExpensesStore } from '../stores/expenses'
+import { useGoalsStore } from '../stores/goals'
 import { useIncomeStore } from '../stores/income'
 import { useRewardsStore } from '../stores/rewards'
 import { useSettingsStore } from '../stores/settings'
@@ -100,7 +102,7 @@ async function exportFile(make: () => Promise<[string, string, string]>) {
 
 function exportCsv() {
   // The byte-order mark lets Excel read Arabic and other non-Latin notes correctly.
-  return exportFile(async () => [`money-tracker-expenses-${todayYmd()}.csv`, '\uFEFF' + expensesCsv(expenses.expenses, categoryById), 'text/csv'])
+  return exportFile(async () => [`money-tracker-expenses-${todayYmd()}.csv`, '\uFEFF' + expensesCsv(expenses.expenses, categoryById, (id) => useAccountsStore().get(id)?.name ?? ''), 'text/csv'])
 }
 
 async function exportBackup() {
@@ -121,6 +123,9 @@ async function exportBackup() {
       income: useIncomeStore().sources,
       rewards: useRewardsStore().rewards,
       categories: useCategoriesStore().edits,
+      accounts: useAccountsStore().accounts,
+      transfers: useAccountsStore().transfers,
+      goals: useGoalsStore().goals,
     }
     return [`money-tracker-backup-${todayYmd()}.json`, backupJson(data), 'application/json']
   })
@@ -183,6 +188,20 @@ const logoUrl = `${import.meta.env.BASE_URL}logo.svg`
         <span class="muted hint">When a day goes over its daily budget, the extra is split evenly across the days left in the month and taken off their budgets. When a day ends under budget, what's left is split the same way and added to them.</span>
       </div>
     </section>
+    <RouterLink to="/accounts" class="card link-row">
+      <span class="link-text">
+        <span class="lock-title">Accounts</span>
+        <span class="muted reward-hint">Cash, bank, card and wallets, their balances and transfers between them.</span>
+      </span>
+      <AppIcon name="forward" :size="18" class="link-go" />
+    </RouterLink>
+    <RouterLink to="/goals" class="card link-row">
+      <span class="link-text">
+        <span class="lock-title">Savings goals</span>
+        <span class="muted reward-hint">Save toward something and see how much to put aside each month.</span>
+      </span>
+      <AppIcon name="forward" :size="18" class="link-go" />
+    </RouterLink>
     <RouterLink to="/categories" class="card link-row">
       <span class="link-text">
         <span class="lock-title">Categories</span>
@@ -255,7 +274,7 @@ const logoUrl = `${import.meta.env.BASE_URL}logo.svg`
     <section class="card fields">
       <div class="option">
         <span class="section-title">Export your data</span>
-        <span class="muted reward-hint">Expenses as a spreadsheet, or everything (expenses, fixed, income, rewards, categories and settings) as a backup file.</span>
+        <span class="muted reward-hint">Expenses as a spreadsheet, or everything (expenses, fixed, income, rewards, categories, accounts, goals and settings) as a backup file. Receipt photos stay on the phone.</span>
       </div>
       <label v-if="backupNeedsPassword" class="field">
         Income password (for the full backup)

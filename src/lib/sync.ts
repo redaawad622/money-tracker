@@ -5,7 +5,7 @@ import { newId } from './id'
 // local record when another device deleted it on purpose, and a record missing from the cloud
 // is uploaded again, never removed here.
 
-export const KINDS = ['expenses', 'subscriptions', 'settings', 'income', 'rewards', 'categories'] as const
+export const KINDS = ['expenses', 'subscriptions', 'settings', 'income', 'rewards', 'categories', 'accounts', 'transfers', 'goals'] as const
 export type Kind = (typeof KINDS)[number]
 
 export interface Remote {
@@ -59,14 +59,14 @@ export function hash(v: unknown): string {
   return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36)
 }
 
-// Both sides changed the same subscription, income source or the settings: one merged version.
-// This device wins on plain fields; paid due dates and project entries from either side are kept.
+// Both sides changed the same subscription, income source, goal or the settings: one merged version.
+// This device wins on plain fields; paid due dates and project or goal entries from either side are kept.
 function merge(kind: Kind, local: any, remote: any) {
   if (kind === 'subscriptions') {
     const paid = [...new Set([...(remote?.paid ?? []), ...(local?.paid ?? [])])].sort()
     return { ...remote, ...local, paid }
   }
-  if (kind === 'income' && Array.isArray(local?.entries)) {
+  if ((kind === 'income' || kind === 'goals') && Array.isArray(local?.entries)) {
     const byId = new Map<string, unknown>()
     for (const e of [...(remote?.entries ?? []), ...local.entries]) byId.set(e.id, e)
     return { ...remote, ...local, entries: [...byId.values()] }
