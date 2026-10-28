@@ -10,7 +10,9 @@ import App from './App.vue'
 import { router } from './router'
 import { useAccount } from './composables/useAccount'
 import { useAppLock } from './composables/useAppLock'
+import { useBillReminders } from './composables/useBillReminders'
 import { useIncomeLock } from './composables/useIncomeLock'
+import { useCategoriesStore } from './stores/categories'
 import { useExpensesStore } from './stores/expenses'
 import { useIncomeStore } from './stores/income'
 import { useRewardsStore } from './stores/rewards'
@@ -28,12 +30,14 @@ async function start() {
     useSubscriptionsStore(pinia).hydrate(),
     useIncomeStore(pinia).hydrate(),
     useRewardsStore(pinia).hydrate(),
+    useCategoriesStore(pinia).hydrate(),
     useAppLock().start(),
     useIncomeLock().start(),
   ])
   app.use(router)
   app.mount('#app')
   void useAccount().start()
+  void useBillReminders().start((path) => void router.push(path))
 }
 
 void start()

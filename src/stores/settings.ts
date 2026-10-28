@@ -12,9 +12,18 @@ export interface Settings {
   azkarReward: number
   /** Paid into the reward pot for each 30 days with a logged workout in Workout Tracker; 0 turns it off. */
   workoutReward: number
+  /** Notify before each unpaid fixed subscription is due (on the phone). */
+  billReminders: boolean
+  /** How many days before the due date to remind; 0 is the day itself. */
+  billReminderDays: number
+  /** Warn on Overview once this share of the monthly budget is spent; 0 turns it off. */
+  budgetWarningPercent: number
 }
 
-const DEFAULTS: Settings = { currency: '$', monthlyBudget: 2000, includeSubscriptionsInBudget: true, spreadDailyDifference: false, azkarReward: 0, workoutReward: 0 }
+const DEFAULTS: Settings = {
+  currency: '$', monthlyBudget: 2000, includeSubscriptionsInBudget: true, spreadDailyDifference: false, azkarReward: 0, workoutReward: 0,
+  billReminders: false, billReminderDays: 1, budgetWarningPercent: 80,
+}
 
 export const useSettingsStore = defineStore('settings', () => {
   const settings = reactive<Settings>({ ...DEFAULTS })

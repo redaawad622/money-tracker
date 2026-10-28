@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed, shallowRef } from 'vue'
-import { CATEGORIES, FAMILY_COLORS, categoryById, type CategoryGroup } from '../data/categories'
+import { FAMILY_COLORS, categoryById, type CategoryGroup } from '../data/categories'
+import { useCategoriesStore } from '../stores/categories'
 import AppIcon from './AppIcon.vue'
 
 const model = defineModel<string>({ required: true })
+const categories = useCategoriesStore()
 
 const GROUPS: { id: CategoryGroup; label: string }[] = [
   { id: 'daily', label: 'Daily' },
@@ -12,8 +14,9 @@ const GROUPS: { id: CategoryGroup; label: string }[] = [
 
 const group = shallowRef<CategoryGroup>(categoryById(model.value).group)
 
+// Hidden categories stay out, except the one an expense being edited already uses.
 const tiles = computed(() =>
-  CATEGORIES.filter((c) => c.group === group.value).map((c) => {
+  categories.inGroup(group.value, true).filter((c) => !c.hidden || c.id === model.value).map((c) => {
     const colors = FAMILY_COLORS[c.family]
     const selected = c.id === model.value
     return {
@@ -32,7 +35,8 @@ const tiles = computed(() =>
 function pickGroup(id: CategoryGroup) {
   if (group.value === id) return
   group.value = id
-  model.value = CATEGORIES.find((c) => c.group === id)!.id
+  const first = categories.inGroup(id)[0] ?? categories.inGroup(id, true)[0]
+  if (first) model.value = first.id
 }
 </script>
 
@@ -84,5 +88,5 @@ function pickGroup(id: CategoryGroup) {
   height: 60px; border-style: solid; border-radius: 14px; padding: 0 2px;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
 }
-.tile-name { color: var(--ink); font-size: 11px; font-weight: 700; line-height: 1.15; }
+.tile-name { color: var(--ink); font-size: 11px; font-weight: 700; line-height: 1.15; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
 </style>
