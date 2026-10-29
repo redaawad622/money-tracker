@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../i18n'
 import { computed } from 'vue'
 
 export interface DayBar { date: string; day: number; amount: number | null; isToday: boolean }
@@ -23,7 +24,7 @@ const lastDay = computed(() => bars.length)
 </script>
 
 <template>
-  <div class="chart" role="img" aria-label="Spending per day this month">
+  <div class="chart" role="img" :aria-label="t('Spending per day this month')">
     <div v-for="bar in drawn" :key="bar.date" class="col">
       <div class="bar" :class="`bar--${bar.tone}`" :style="{ height: bar.height }" />
       <div class="limit" :style="{ bottom: bar.limit }" />
@@ -33,9 +34,9 @@ const lastDay = computed(() => bars.length)
     <span>1</span><span>8</span><span>15</span><span>22</span><span>{{ lastDay }}</span>
   </div>
   <div class="legend">
-    <span class="key"><span class="swatch swatch--today" />Today</span>
-    <span class="key"><span class="swatch swatch--over" />Over daily budget</span>
-    <span class="key"><span class="dash" />Daily budget</span>
+    <span class="key"><span class="swatch swatch--today" />{{ t('Today') }}</span>
+    <span class="key"><span class="swatch swatch--over" />{{ t('Over daily budget') }}</span>
+    <span class="key"><span class="dash" />{{ t('Daily budget') }}</span>
   </div>
 </template>
 

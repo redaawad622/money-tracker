@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../i18n'
 import { useAppLock } from '../composables/useAppLock'
 
 const lock = useAppLock()
@@ -6,12 +7,12 @@ const logoUrl = `${import.meta.env.BASE_URL}logo.svg`
 </script>
 
 <template>
-  <div class="lock" role="dialog" aria-modal="true" aria-label="Money Tracker is locked">
+  <div class="lock" role="dialog" aria-modal="true" :aria-label="t('Money Tracker is locked')">
     <img :src="logoUrl" alt="" class="logo" width="72" height="72" />
-    <span class="name">Money Tracker</span>
-    <span class="muted sub">Locked</span>
+    <span class="name">{{ t('Money Tracker') }}</span>
+    <span class="muted sub">{{ t('Locked') }}</span>
     <button type="button" class="primary-btn unlock" :disabled="lock.busy.value" @click="lock.unlock()">
-      Unlock with {{ lock.kind.value }}
+      {{ t('Unlock with {kind}', { kind: t(lock.kind.value) }) }}
     </button>
   </div>
 </template>

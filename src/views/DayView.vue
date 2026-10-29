@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../i18n'
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppIcon from '../components/AppIcon.vue'
@@ -64,31 +65,31 @@ function back() {
 <template>
   <main class="page page--no-tabs">
     <header class="header">
-      <button type="button" class="icon-btn" aria-label="Back to overview" @click="back"><AppIcon name="back" /></button>
+      <button type="button" class="icon-btn" :aria-label="t('Back to overview')" @click="back"><AppIcon name="back" /></button>
       <div class="day-nav">
-        <button type="button" class="icon-btn icon-btn--plain" aria-label="Previous day" @click="shiftDay(-1)"><AppIcon name="back" :size="18" /></button>
+        <button type="button" class="icon-btn icon-btn--plain" :aria-label="t('Previous day')" @click="shiftDay(-1)"><AppIcon name="back" :size="18" /></button>
         <h1 class="day-label">{{ formatDay(date) }}</h1>
-        <button type="button" class="icon-btn icon-btn--plain" aria-label="Next day" :disabled="isToday" @click="shiftDay(1)"><AppIcon name="forward" :size="18" /></button>
+        <button type="button" class="icon-btn icon-btn--plain" :aria-label="t('Next day')" :disabled="isToday" @click="shiftDay(1)"><AppIcon name="forward" :size="18" /></button>
       </div>
       <div class="spacer" />
     </header>
 
     <section class="total">
-      <span class="muted total-label">{{ isToday ? 'Today you spent' : 'Spent this day' }}</span>
+      <span class="muted total-label">{{ isToday ? t('Today you spent') : t('Spent this day') }}</span>
       <span class="total-amount">{{ money(total) }}</span>
       <span v-if="total > 0" class="pill" :class="diff >= 0 ? 'pill--under' : 'pill--over'">
         <AppIcon :name="diff >= 0 ? 'down' : 'up'" :size="14" :stroke-width="2.4" />
-        {{ money(Math.abs(diff)) }} {{ diff >= 0 ? 'under' : 'over' }} your daily budget
+        {{ diff >= 0 ? t('{amount} under your daily budget', { amount: money(Math.abs(diff)) }) : t('{amount} over your daily budget', { amount: money(Math.abs(diff)) }) }}
       </span>
-      <span v-if="fromRewards > 0" class="muted shift">+ {{ money(fromRewards) }} paid from rewards, not counted</span>
+      <span v-if="fromRewards > 0" class="muted shift">{{ t('+ {amount} paid from rewards, not counted', { amount: money(fromRewards) }) }}</span>
       <span v-if="Math.abs(shift) >= 0.01" class="muted shift">
-        Daily budget {{ money(dailyBudget) }}, {{ shift < 0 ? 'lowered' : 'raised' }} by {{ money(Math.abs(shift)) }} by earlier days
+        {{ shift < 0 ? t('Daily budget {budget}, lowered by {amount} by earlier days', { budget: money(dailyBudget), amount: money(Math.abs(shift)) }) : t('Daily budget {budget}, raised by {amount} by earlier days', { budget: money(dailyBudget), amount: money(Math.abs(shift)) }) }}
       </span>
     </section>
 
     <section v-if="split.length" class="card split">
-      <h2 class="section-title">By category</h2>
-      <div class="split-bar" role="img" aria-label="Split of this day's spending by category">
+      <h2 class="section-title">{{ t('By category') }}</h2>
+      <div class="split-bar" role="img" :aria-label="t('Split of this day\'s spending by category')">
         <div v-for="s in split" :key="s.id" :style="{ width: `${s.pct}%`, background: s.color }" />
       </div>
       <div v-for="s in split" :key="s.id" class="split-row">
@@ -101,17 +102,17 @@ function back() {
 
     <section class="expenses">
       <div class="expenses-head">
-        <h2 class="section-title">Expenses</h2>
-        <span class="muted count">{{ list.length }} {{ list.length === 1 ? 'item' : 'items' }}</span>
+        <h2 class="section-title">{{ t('Expenses') }}</h2>
+        <span class="muted count">{{ list.length === 1 ? t('1 item') : t('{n} items', { n: list.length }) }}</span>
       </div>
-      <p v-if="list.length === 0" class="card empty">Nothing spent on this day.</p>
+      <p v-if="list.length === 0" class="card empty">{{ t('Nothing spent on this day.') }}</p>
       <div v-else class="card list">
         <ExpenseRow v-for="e in list" :key="e.id" :expense="e" :currency="settings.currency" />
       </div>
     </section>
 
     <RouterLink :to="{ path: '/add', query: { date } }" class="primary-btn add">
-      <AppIcon name="plus" :stroke-width="2.4" /> Add expense to this day
+      <AppIcon name="plus" :stroke-width="2.4" /> {{ t('Add expense to this day') }}
     </RouterLink>
   </main>
 </template>
@@ -133,7 +134,7 @@ function back() {
 .split-row { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; }
 .swatch { width: 10px; height: 10px; border-radius: 3px; flex: 0 0 auto; }
 .split-name { flex: 1 1 auto; }
-.split-amount { width: 84px; text-align: right; font-weight: 700; }
+.split-amount { width: 84px; text-align: end; font-weight: 700; }
 .expenses { display: flex; flex-direction: column; gap: 8px; }
 .expenses-head { display: flex; align-items: center; justify-content: space-between; }
 .count { font-size: 12px; font-weight: 600; }

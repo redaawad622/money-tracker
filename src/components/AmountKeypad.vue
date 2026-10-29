@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../i18n'
 import AppIcon from './AppIcon.vue'
 
 /** The amount being typed, as text ("12.75"), so trailing "." and "0" survive while typing. */
@@ -21,7 +22,7 @@ function press(key: (typeof KEYS)[number]) {
 }
 
 function ariaLabel(key: string) {
-  return key === 'del' ? 'Delete' : key === '.' ? 'Decimal point' : key
+  return key === 'del' ? t('Delete') : key === '.' ? t('Decimal point') : key
 }
 </script>
 

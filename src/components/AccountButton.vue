@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../i18n'
 import { computed } from 'vue'
 import { useAccount } from '../composables/useAccount'
 import AppIcon from './AppIcon.vue'
@@ -11,12 +12,12 @@ const initial = computed(() => (account.user.value?.email?.[0] ?? '?').toUpperCa
 
 <template>
   <template v-if="show">
-    <RouterLink v-if="account.user.value" to="/settings" aria-label="Account" class="avatar">
+    <RouterLink v-if="account.user.value" to="/settings" :aria-label="t('Account')" class="avatar">
       {{ initial }}
       <span v-if="account.state.value !== 'idle'" class="dot" :class="{ 'dot--error': account.state.value === 'error' }" />
     </RouterLink>
     <RouterLink v-else to="/settings" class="sign-in">
-      <AppIcon name="user" :size="18" />Sign in
+      <AppIcon name="user" :size="18" />{{ t('Sign in') }}
     </RouterLink>
   </template>
 </template>
@@ -28,7 +29,7 @@ const initial = computed(() => (account.user.value?.email?.[0] ?? '?').toUpperCa
   background: var(--accent-soft); color: var(--accent-ink); font-size: 16px; font-weight: 800;
 }
 .dot {
-  position: absolute; top: -1px; right: -1px; width: 12px; height: 12px; border-radius: 50%;
+  position: absolute; top: -1px; inset-inline-end: -1px; width: 12px; height: 12px; border-radius: 50%;
   background: var(--accent); box-shadow: 0 0 0 2px var(--ground); animation: pulse 1.2s ease-in-out infinite;
 }
 .dot--error { background: var(--warn); animation: none; }

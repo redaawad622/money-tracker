@@ -24,8 +24,8 @@ const { label } = defineProps<{ label: string }>()
 }
 .switch--on { background: #3FA37F; }
 .knob {
-  position: absolute; top: 4px; left: 4px; width: 24px; height: 24px; border-radius: 99px; background: #fff;
-  transition: transform 0.15s;
+  position: absolute; top: 4px; inset-inline-start: 4px; width: 24px; height: 24px; border-radius: 99px; background: #fff;
+  transition: inset-inline-start 0.15s;
 }
-.switch--on .knob { transform: translateX(20px); }
+.switch--on .knob { inset-inline-start: 24px; }
 </style>

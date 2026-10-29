@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../i18n'
 import { computed, shallowRef } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppIcon from '../components/AppIcon.vue'
@@ -89,7 +90,7 @@ const preview = computed(() => {
     const r = num(ratePercent.value)
     if (!p || r === null) return ''
     const yearly = (p * r) / 100
-    return `Earns ${money(yearly)} a year, ${money(yearly / 12)} a month.`
+    return t('Earns {year} a year, {month} a month.', { year: money(yearly), month: money(yearly / 12) })
   }
   if (type === 'deal') {
     const i = num(invested.value)
@@ -99,7 +100,9 @@ const preview = computed(() => {
     const yearly = dealYearlyPercent(d)
     const days = daysBetween(start.value, end.value)
     const total = Math.round((g / i) * 1000) / 10
-    return `${total}% return over ${formatPeriod(days)}${yearly !== null ? `, about ${Math.round(yearly * 10) / 10}% a year` : ''}. You get back ${money(i + g)}.`
+    const over = t('{pct}% return over {period}', { pct: total, period: formatPeriod(days) })
+    const perYear = yearly !== null ? t(', about {pct}% a year', { pct: Math.round(yearly * 10) / 10 }) : ''
+    return `${over}${perYear}. ${t('You get back {amount}.', { amount: money(i + g) })}`
   }
   return ''
 })
@@ -118,7 +121,7 @@ function save() {
 }
 
 function remove() {
-  if (!editing || !window.confirm(`Delete "${editing.name}"?`)) return
+  if (!editing || !window.confirm(t('Delete "{name}"?', { name: editing.name }))) return
   income.remove(editing.id)
   void router.replace({ path: '/income', query: route.query })
 }
@@ -127,81 +130,81 @@ function remove() {
 <template>
   <main class="page page--no-tabs">
     <header class="header">
-      <RouterLink :to="back" class="icon-btn" aria-label="Close"><AppIcon name="close" /></RouterLink>
-      <h1 class="title">{{ editing ? 'Edit' : 'New' }} {{ TITLES[type] }}</h1>
+      <RouterLink :to="back" class="icon-btn" :aria-label="t('Close')"><AppIcon name="close" /></RouterLink>
+      <h1 class="title">{{ t(`${editing ? 'Edit' : 'New'} ${TITLES[type]}`) }}</h1>
       <div class="spacer" />
     </header>
 
     <form class="fields" @submit.prevent="save">
       <label class="field">
-        Name
-        <input v-model="name" type="text" :placeholder="PLACEHOLDERS[type]" maxlength="40" required />
+        {{ t('Name') }}
+        <input v-model="name" type="text" :placeholder="t(PLACEHOLDERS[type])" maxlength="40" required />
       </label>
 
       <label v-if="type === 'salary'" class="field">
-        Amount every month ({{ settings.currency }})
+        {{ t('Amount every month ({currency})', { currency: settings.currency }) }}
         <input v-model.number="amount" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" required />
       </label>
 
       <template v-if="type === 'investment'">
         <label class="field">
-          Amount invested ({{ settings.currency }})
+          {{ t('Amount invested ({currency})', { currency: settings.currency }) }}
           <input v-model.number="principal" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" required />
         </label>
         <label class="field">
-          Yearly return (%)
-          <input v-model.number="ratePercent" type="number" inputmode="decimal" step="0.1" placeholder="e.g. 25" required />
+          {{ t('Yearly return (%)') }}
+          <input v-model.number="ratePercent" type="number" inputmode="decimal" step="0.1" :placeholder="t('e.g. {n}', { n: 25 })" required />
         </label>
       </template>
 
       <template v-if="type === 'deal'">
         <label class="field">
-          Amount invested ({{ settings.currency }})
+          {{ t('Amount invested ({currency})', { currency: settings.currency }) }}
           <input v-model.number="invested" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" required />
         </label>
         <div class="field">
           <span class="earn-head">
-            Amount earned, profit
-            <span class="segments" role="group" aria-label="Profit entered as">
+            {{ t('Amount earned, profit') }}
+            <span class="segments" role="group" :aria-label="t('Profit entered as')">
               <button type="button" class="segment" :class="{ 'segment--on': earnMode === 'fixed' }" :aria-pressed="earnMode === 'fixed'" @click="earnMode = 'fixed'">{{ settings.currency }}</button>
               <button type="button" class="segment" :class="{ 'segment--on': earnMode === 'percent' }" :aria-pressed="earnMode === 'percent'" @click="earnMode = 'percent'">%</button>
             </span>
           </span>
-          <input v-if="earnMode === 'fixed'" v-model.number="earned" type="number" inputmode="decimal" step="0.01" placeholder="0.00" aria-label="Profit amount" required />
-          <input v-else v-model.number="earnedPercent" type="number" inputmode="decimal" step="0.1" placeholder="e.g. 20" aria-label="Profit, percent of amount invested" required />
-          <span v-if="earnMode === 'percent' && profit !== null" class="muted earn-hint">{{ earnedPercent }}% of {{ money(num(invested) ?? 0) }} = {{ money(profit) }}</span>
+          <input v-if="earnMode === 'fixed'" v-model.number="earned" type="number" inputmode="decimal" step="0.01" placeholder="0.00" :aria-label="t('Profit amount')" required />
+          <input v-else v-model.number="earnedPercent" type="number" inputmode="decimal" step="0.1" :placeholder="t('e.g. {n}', { n: 20 })" :aria-label="t('Profit, percent of amount invested')" required />
+          <span v-if="earnMode === 'percent' && profit !== null" class="muted earn-hint">{{ t('{pct}% of {amount}', { pct: earnedPercent, amount: money(num(invested) ?? 0) }) }} = {{ money(profit) }}</span>
         </div>
       </template>
 
       <template v-if="type !== 'project'">
         <label class="field">
-          {{ type === 'deal' ? 'Start date' : 'Starts' }}
+          {{ type === 'deal' ? t('Start date') : t('Starts') }}
           <input v-model="start" type="date" required />
         </label>
         <label v-if="type !== 'deal'" class="check">
           <input v-model="ongoing" type="checkbox" />
-          Still going, no end date
+          {{ t('Still going, no end date') }}
         </label>
         <label v-if="type === 'deal' || !ongoing" class="field">
-          {{ type === 'deal' ? 'End date' : 'Ends' }}
+          {{ type === 'deal' ? t('End date') : t('Ends') }}
           <input v-model="end" type="date" :min="start" required />
         </label>
       </template>
 
       <label class="field">
-        Note (optional)
-        <input v-model="note" type="text" maxlength="80" :placeholder="type === 'project' ? 'e.g. Downtown branch' : ''" />
+        {{ t('Note (optional)') }}
+        <input v-model="note" type="text" maxlength="80" :placeholder="type === 'project' ? t('e.g. Downtown branch') : ''" />
       </label>
 
       <p v-if="preview" class="card preview">{{ preview }}</p>
-      <p v-if="type === 'deal'" class="muted help">Deals count in the yearly report for the year they end.</p>
-      <p v-if="type === 'project'" class="muted help">After saving, log what the project earns and costs.</p>
+      <p v-if="type === 'deal'" class="muted help">{{ t('Deals count in the yearly report for the year they end.') }}</p>
+      <p v-if="type === 'project'" class="muted help">{{ t('After saving, log what the project earns and costs.') }}</p>
 
       <button type="submit" class="primary-btn" :disabled="!input">
-        <AppIcon name="check" :stroke-width="2.4" /> Save
+        <AppIcon name="check" :stroke-width="2.4" /> {{ t('Save') }}
       </button>
       <button v-if="editing" type="button" class="danger-btn" @click="remove">
-        <AppIcon name="trash" /> Delete {{ TITLES[type] }}
+        <AppIcon name="trash" /> {{ t(`Delete ${TITLES[type]}`) }}
       </button>
     </form>
   </main>

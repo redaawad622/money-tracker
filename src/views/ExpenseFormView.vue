@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../i18n'
 import { computed, onBeforeUnmount, onMounted, shallowRef } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AmountKeypad from '../components/AmountKeypad.vue'
@@ -76,7 +77,7 @@ function onPick(event: Event) {
 }
 
 function forgetPhoto() {
-  if (window.confirm('This receipt photo was taken on another device, so it can only be seen there. Remove it from this expense?')) removePhoto()
+  if (window.confirm(t('This receipt photo was taken on another device, so it can only be seen there. Remove it from this expense?'))) removePhoto()
 }
 
 function removePhoto() {
@@ -91,7 +92,7 @@ function removePhoto() {
 const amount = computed(() => Number.parseFloat(amountText.value) || 0)
 const canSave = computed(() => amount.value > 0 && date.value !== '')
 const category = computed(() => categoryById(categoryId.value))
-const heading = editing ? 'Edit expense' : 'Add expense'
+const heading = editing ? t('Edit expense') : t('Add expense')
 // The pot as it would be without this expense, so editing one shows what it can use.
 const potBefore = computed(() => rewards.balance + (editing?.fromRewards ? editing.amount : 0))
 const showRewards = computed(() => fromRewards.value || potBefore.value > 0)
@@ -105,7 +106,7 @@ async function save() {
       photo = await saveReceipt(picked.value)
     } catch {
       saving.value = false
-      window.alert("Couldn't save the photo. Try another one, or save without it.")
+      window.alert(t("Couldn't save the photo. Try another one, or save without it."))
       return
     }
   }
@@ -128,7 +129,7 @@ async function save() {
 
 function remove() {
   if (!editing) return
-  if (!window.confirm('Delete this expense?')) return
+  if (!window.confirm(t('Delete this expense?'))) return
   if (editing.receipt) void deleteReceipt(editing.receipt)
   expenses.remove(editing.id)
   void router.replace(`/day/${editing.date}`)
@@ -143,14 +144,14 @@ function close() {
 <template>
   <main class="page page--no-tabs form">
     <header class="header">
-      <button type="button" class="icon-btn" aria-label="Close" @click="close"><AppIcon name="close" /></button>
+      <button type="button" class="icon-btn" :aria-label="t('Close')" @click="close"><AppIcon name="close" /></button>
       <h1 class="title">{{ heading }}</h1>
-      <button v-if="editing" type="button" class="icon-btn" aria-label="Delete expense" @click="remove"><AppIcon name="trash" /></button>
+      <button v-if="editing" type="button" class="icon-btn" :aria-label="t('Delete expense')" @click="remove"><AppIcon name="trash" /></button>
       <div v-else class="spacer" />
     </header>
 
     <section class="amount" aria-live="polite">
-      <span class="muted amount-label">{{ category.name }}<template v-if="category.group === 'monthly'"> · monthly bill</template></span>
+      <span class="muted amount-label">{{ category.name }}<template v-if="category.group === 'monthly'"> · {{ t('monthly bill') }}</template></span>
       <div class="amount-value">
         <span class="currency">{{ settings.currency }}</span>
         <span class="digits">{{ amountText }}</span>
@@ -161,39 +162,39 @@ function close() {
 
     <div class="meta">
       <label class="note">
-        <span class="visually-hidden">Note</span>
+        <span class="visually-hidden">{{ t('Note') }}</span>
         <AppIcon name="pencil" :size="18" />
-        <input v-model="note" type="text" placeholder="Add a note" maxlength="80" />
+        <input v-model="note" type="text" :placeholder="t('Add a note')" maxlength="80" />
       </label>
       <label class="date">
-        <span class="visually-hidden">Date</span>
+        <span class="visually-hidden">{{ t('Date') }}</span>
         <input v-model="date" type="date" :max="todayYmd()" />
       </label>
     </div>
 
     <div class="meta">
       <label class="note">
-        <span class="visually-hidden">Store</span>
+        <span class="visually-hidden">{{ t('Store') }}</span>
         <AppIcon name="store" :size="18" />
-        <input v-model="store" type="text" list="store-suggestions" placeholder="Store (optional)" maxlength="40" />
+        <input v-model="store" type="text" list="store-suggestions" :placeholder="t('Store (optional)')" maxlength="40" />
       </label>
       <datalist id="store-suggestions">
         <option v-for="s in storeSuggestions" :key="s" :value="s" />
       </datalist>
-      <button v-if="preview" type="button" class="photo photo--thumb" aria-label="View receipt photo" @click="viewing = true">
+      <button v-if="preview" type="button" class="photo photo--thumb" :aria-label="t('View receipt photo')" @click="viewing = true">
         <img :src="preview" alt="" />
       </button>
-      <button v-else-if="receiptMissing" type="button" class="photo" aria-label="Receipt photo is on another device" @click="forgetPhoto">
-        <AppIcon name="camera" :size="18" /><span class="photo-label">Other device</span>
+      <button v-else-if="receiptMissing" type="button" class="photo" :aria-label="t('Receipt photo is on another device')" @click="forgetPhoto">
+        <AppIcon name="camera" :size="18" /><span class="photo-label">{{ t('Other device') }}</span>
       </button>
-      <button v-else type="button" class="photo" aria-label="Add receipt photo" @click="fileInput?.click()">
-        <AppIcon name="camera" :size="18" /><span class="photo-label">Receipt</span>
+      <button v-else type="button" class="photo" :aria-label="t('Add receipt photo')" @click="fileInput?.click()">
+        <AppIcon name="camera" :size="18" /><span class="photo-label">{{ t('Receipt') }}</span>
       </button>
       <input ref="fileInput" type="file" accept="image/*" class="visually-hidden" tabindex="-1" @change="onPick" />
     </div>
 
-    <div v-if="accountChoices.length" class="paid-with" role="group" aria-label="Paid with">
-      <button type="button" class="chip" :class="{ 'chip--on': !accountId }" :aria-pressed="!accountId" @click="accountId = undefined">Not set</button>
+    <div v-if="accountChoices.length" class="paid-with" role="group" :aria-label="t('Paid with')">
+      <button type="button" class="chip" :class="{ 'chip--on': !accountId }" :aria-pressed="!accountId" @click="accountId = undefined">{{ t('Not set') }}</button>
       <button
         v-for="a in accountChoices" :key="a.id" type="button" class="chip"
         :class="{ 'chip--on': accountId === a.id }" :aria-pressed="accountId === a.id" @click="accountId = a.id"
@@ -202,26 +203,26 @@ function close() {
 
     <div v-if="showRewards" class="rewards">
       <span class="rewards-text">
-        <span class="rewards-title">Pay from rewards</span>
+        <span class="rewards-title">{{ t('Pay from rewards') }}</span>
         <span class="muted rewards-sub" :class="{ 'rewards-sub--over': fromRewards && amount > potBefore }">
-          {{ formatMoney(potBefore, settings.currency) }} in the pot · not counted in the budget
+          {{ t('{amount} in the pot · not counted in the budget', { amount: formatMoney(potBefore, settings.currency) }) }}
         </span>
       </span>
-      <ToggleSwitch v-model="fromRewards" label="Pay from rewards" />
+      <ToggleSwitch v-model="fromRewards" :label="t('Pay from rewards')" />
     </div>
 
     <AmountKeypad v-model="amountText" />
 
     <button type="button" class="primary-btn" :disabled="!canSave || saving" @click="save">
-      <AppIcon name="check" :stroke-width="2.4" /> Save expense
+      <AppIcon name="check" :stroke-width="2.4" /> {{ t('Save expense') }}
     </button>
 
-    <div v-if="viewing && preview" class="viewer" role="dialog" aria-label="Receipt photo" @click.self="viewing = false">
-      <img :src="preview" alt="Receipt" class="viewer-img" />
+    <div v-if="viewing && preview" class="viewer" role="dialog" :aria-label="t('Receipt photo')" @click.self="viewing = false">
+      <img :src="preview" :alt="t('Receipt')" class="viewer-img" />
       <div class="viewer-actions">
-        <button type="button" class="viewer-btn" @click="fileInput?.click()">Replace</button>
-        <button type="button" class="viewer-btn" @click="removePhoto">Remove</button>
-        <button type="button" class="viewer-btn viewer-btn--main" @click="viewing = false">Done</button>
+        <button type="button" class="viewer-btn" @click="fileInput?.click()">{{ t('Replace') }}</button>
+        <button type="button" class="viewer-btn" @click="removePhoto">{{ t('Remove') }}</button>
+        <button type="button" class="viewer-btn viewer-btn--main" @click="viewing = false">{{ t('Done') }}</button>
       </div>
     </div>
   </main>

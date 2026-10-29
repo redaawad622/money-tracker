@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../i18n'
 import { computed } from 'vue'
 import { addMonths, daysBetween, formatDayMonth, parseYmd } from '../lib/dates'
 import { formatMoney } from '../lib/money'
@@ -22,7 +23,7 @@ const daysToUpcoming = computed(() => daysBetween(today, upcoming.value))
 
 const schedule = computed(() => {
   const day = parseYmd(sub.anchor).getDate()
-  return isQuarterly.value ? `Every 3 months · on day ${day}` : `Every month · on day ${day}`
+  return isQuarterly.value ? t('Every 3 months · on day {day}', { day }) : t('Every month · on day {day}', { day })
 })
 
 const cycle = computed(() => {
@@ -33,7 +34,7 @@ const cycle = computed(() => {
 })
 
 function inDays(n: number) {
-  return n === 0 ? 'today' : n === 1 ? 'tomorrow' : `in ${n} days`
+  return n === 0 ? t('today') : n === 1 ? t('tomorrow') : t('in {n} days', { n })
 }
 </script>
 
@@ -46,29 +47,29 @@ function inDays(n: number) {
       <span class="text">
         <span class="name">{{ sub.name }}</span>
         <span class="muted small">
-          {{ schedule }}<template v-if="isQuarterly"> · ≈ {{ money(monthlyEquivalent(sub)) }} / month</template>
+          {{ schedule }}<template v-if="isQuarterly"> · ≈ {{ t('{amount} / month', { amount: money(monthlyEquivalent(sub)) }) }}</template>
         </span>
       </span>
       <span class="amount">{{ money(sub.amount) }}</span>
     </RouterLink>
 
     <div v-if="isQuarterly && cycle" class="cycle">
-      <div class="bar" role="img" :aria-label="`${cycle.done} of ${cycle.total} days of this period passed`">
+      <div class="bar" role="img" :aria-label="t('{done} of {total} days of this period passed', { done: cycle.done, total: cycle.total })">
         <div class="bar-fill" :style="{ width: `${cycle.pct}%` }" />
       </div>
     </div>
 
     <div class="sub-foot">
       <template v-if="last">
-        <button v-if="lastPaid" type="button" class="pill pill--paid" :aria-label="`Paid ${formatDayMonth(last)}, tap to undo`" @click="emit('setPaid', last, false)">
-          <AppIcon name="check" :size="13" :stroke-width="2.6" /> Paid {{ formatDayMonth(last) }}
+        <button v-if="lastPaid" type="button" class="pill pill--paid" :aria-label="t('Paid {date}, tap to undo', { date: formatDayMonth(last) })" @click="emit('setPaid', last, false)">
+          <AppIcon name="check" :size="13" :stroke-width="2.6" /> {{ t('Paid {date}', { date: formatDayMonth(last) }) }}
         </button>
         <button v-else type="button" class="pill pill--due" @click="emit('setPaid', last, true)">
-          Due {{ formatDayMonth(last) }} · Mark paid
+          {{ t('Due {date} · Mark paid', { date: formatDayMonth(last) }) }}
         </button>
       </template>
-      <span v-else class="muted small">Starts {{ formatDayMonth(sub.anchor) }}</span>
-      <span class="next" :class="{ 'next--q': isQuarterly }">Next: {{ formatDayMonth(upcoming) }} · {{ inDays(daysToUpcoming) }}</span>
+      <span v-else class="muted small">{{ t('Starts {date}', { date: formatDayMonth(sub.anchor) }) }}</span>
+      <span class="next" :class="{ 'next--q': isQuarterly }">{{ t('Next: {date}', { date: formatDayMonth(upcoming) }) }} · {{ inDays(daysToUpcoming) }}</span>
     </div>
   </article>
 </template>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../i18n'
 import { computed, shallowRef } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppIcon from '../components/AppIcon.vue'
@@ -35,7 +36,7 @@ function save() {
 }
 
 function remove() {
-  if (!editing || !window.confirm(`Delete "${editing.name}"?`)) return
+  if (!editing || !window.confirm(t('Delete "{name}"?', { name: editing.name }))) return
   subs.remove(editing.id)
   void router.replace('/fixed')
 }
@@ -44,43 +45,43 @@ function remove() {
 <template>
   <main class="page page--no-tabs">
     <header class="header">
-      <RouterLink to="/fixed" class="icon-btn" aria-label="Close"><AppIcon name="close" /></RouterLink>
-      <h1 class="title">{{ editing ? 'Edit subscription' : 'New subscription' }}</h1>
+      <RouterLink to="/fixed" class="icon-btn" :aria-label="t('Close')"><AppIcon name="close" /></RouterLink>
+      <h1 class="title">{{ editing ? t('Edit subscription') : t('New subscription') }}</h1>
       <div class="spacer" />
     </header>
 
     <form class="fields" @submit.prevent="save">
       <label class="field">
-        Name
-        <input v-model="name" type="text" placeholder="e.g. Streaming, gym, insurance" maxlength="40" required />
+        {{ t('Name') }}
+        <input v-model="name" type="text" :placeholder="t('e.g. Streaming, gym, insurance')" maxlength="40" required />
       </label>
       <label class="field">
-        Amount ({{ settings.currency }})
+        {{ t('Amount ({currency})', { currency: settings.currency }) }}
         <input v-model.number="amount" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" required />
       </label>
       <fieldset class="field interval">
-        <legend class="legend">How often</legend>
+        <legend class="legend">{{ t('How often') }}</legend>
         <div class="segments">
           <button
             v-for="opt in INTERVALS" :key="opt.value" type="button" class="segment"
             :class="{ 'segment--on': intervalMonths === opt.value }" :aria-pressed="intervalMonths === opt.value"
             @click="intervalMonths = opt.value"
-          >{{ opt.label }}</button>
+          >{{ t(opt.label) }}</button>
         </div>
       </fieldset>
       <label class="field">
-        First payment date
+        {{ t('First payment date') }}
         <input v-model="anchor" type="date" required />
       </label>
       <p class="muted help">
-        Payments repeat {{ intervalMonths === 1 ? 'every month' : 'every 3 months' }} from this date.
+        {{ intervalMonths === 1 ? t('Payments repeat every month from this date.') : t('Payments repeat every 3 months from this date.') }}
       </p>
 
       <button type="submit" class="primary-btn" :disabled="!canSave">
-        <AppIcon name="check" :stroke-width="2.4" /> Save
+        <AppIcon name="check" :stroke-width="2.4" /> {{ t('Save') }}
       </button>
       <button v-if="editing" type="button" class="danger-btn" @click="remove">
-        <AppIcon name="trash" /> Delete subscription
+        <AppIcon name="trash" /> {{ t('Delete subscription') }}
       </button>
     </form>
   </main>

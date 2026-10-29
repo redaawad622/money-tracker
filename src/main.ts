@@ -1,4 +1,4 @@
-import { createApp } from 'vue'
+import { createApp, watch } from 'vue'
 import { createPinia } from 'pinia'
 import '@fontsource/manrope/400.css'
 import '@fontsource/manrope/500.css'
@@ -12,6 +12,7 @@ import { useAccount } from './composables/useAccount'
 import { useAppLock } from './composables/useAppLock'
 import { useBillReminders } from './composables/useBillReminders'
 import { useIncomeLock } from './composables/useIncomeLock'
+import { setLang } from './i18n'
 import { useAccountsStore } from './stores/accounts'
 import { useCategoriesStore } from './stores/categories'
 import { useExpensesStore } from './stores/expenses'
@@ -38,6 +39,8 @@ async function start() {
     useAppLock().start(),
     useIncomeLock().start(),
   ])
+  const { settings } = useSettingsStore(pinia)
+  watch(() => settings.language, (next) => setLang(next === 'ar' ? 'ar' : 'en'), { immediate: true })
   app.use(router)
   app.mount('#app')
   void useAccount().start()

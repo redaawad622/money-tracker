@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../i18n'
 import { computed } from 'vue'
 import AppIcon from '../components/AppIcon.vue'
 import SubscriptionCard from '../components/SubscriptionCard.vue'
@@ -30,7 +31,7 @@ const comingUp = computed(() =>
       key,
       name: formatShortMonth(key),
       total: money(sumMoney(due.map((d) => d.sub.amount))),
-      what: due.length === 0 ? 'Nothing due' : `${due.length} ${due.length === 1 ? 'payment' : 'payments'}`,
+      what: due.length === 0 ? t('Nothing due') : due.length === 1 ? t('1 payment') : t('{n} payments', { n: due.length }),
       highlight: hasQuarterly,
     }
   }),
@@ -41,10 +42,10 @@ const comingUp = computed(() =>
   <main class="page">
     <header class="header">
       <div class="titles">
-        <h1 class="title">Fixed subscriptions</h1>
-        <span class="muted sub">Tracked apart from daily spending</span>
+        <h1 class="title">{{ t('Fixed subscriptions') }}</h1>
+        <span class="muted sub">{{ t('Tracked apart from daily spending') }}</span>
       </div>
-      <RouterLink to="/fixed/new" class="icon-btn icon-btn--accent" aria-label="Add fixed payment">
+      <RouterLink to="/fixed/new" class="icon-btn icon-btn--accent" :aria-label="t('Add fixed payment')">
         <AppIcon name="plus" :stroke-width="2.4" />
       </RouterLink>
     </header>
@@ -52,30 +53,30 @@ const comingUp = computed(() =>
     <section class="summary">
       <div class="summary-grid">
         <div class="summary-item">
-          <span class="summary-label">Due this month</span>
+          <span class="summary-label">{{ t('Due this month') }}</span>
           <span class="summary-value">{{ money(dueThisMonth) }}</span>
         </div>
         <div class="summary-item">
-          <span class="summary-label">Average per month</span>
+          <span class="summary-label">{{ t('Average per month') }}</span>
           <span class="summary-value">{{ money(averagePerMonth) }}</span>
         </div>
       </div>
       <div class="divider" />
       <div class="toggle-row">
         <div class="toggle-text">
-          <span class="toggle-title">Count in monthly budget</span>
-          <span class="summary-label">{{ settings.includeSubscriptionsInBudget ? 'Taken off your budget when due' : 'Kept outside your budget' }}</span>
+          <span class="toggle-title">{{ t('Count in monthly budget') }}</span>
+          <span class="summary-label">{{ settings.includeSubscriptionsInBudget ? t('Taken off your budget when due') : t('Kept outside your budget') }}</span>
         </div>
-        <ToggleSwitch v-model="settings.includeSubscriptionsInBudget" label="Count in monthly budget" />
+        <ToggleSwitch v-model="settings.includeSubscriptionsInBudget" :label="t('Count in monthly budget')" />
       </div>
     </section>
 
     <p v-if="subs.subscriptions.length === 0" class="card empty">
-      No fixed subscriptions yet. Tap + to add your monthly or every-3-months payment.
+      {{ t('No fixed subscriptions yet. Tap + to add your monthly or every-3-months payment.') }}
     </p>
 
     <section v-if="monthly.length" class="group">
-      <h2 class="section-title">Every month</h2>
+      <h2 class="section-title">{{ t('Every month') }}</h2>
       <SubscriptionCard
         v-for="s in monthly" :key="s.id" :sub="s" :today="today" :currency="settings.currency"
         @set-paid="(date, paid) => subs.setPaid(s.id, date, paid)"
@@ -83,7 +84,7 @@ const comingUp = computed(() =>
     </section>
 
     <section v-if="quarterly.length" class="group">
-      <h2 class="section-title">Every 3 months</h2>
+      <h2 class="section-title">{{ t('Every 3 months') }}</h2>
       <SubscriptionCard
         v-for="s in quarterly" :key="s.id" :sub="s" :today="today" :currency="settings.currency"
         @set-paid="(date, paid) => subs.setPaid(s.id, date, paid)"
@@ -91,7 +92,7 @@ const comingUp = computed(() =>
     </section>
 
     <section v-if="subs.subscriptions.length" class="group">
-      <h2 class="section-title">Coming up</h2>
+      <h2 class="section-title">{{ t('Coming up') }}</h2>
       <div class="months">
         <div v-for="m in comingUp" :key="m.key" class="card month" :class="{ 'month--q': m.highlight }">
           <span class="muted month-name">{{ m.name }}</span>

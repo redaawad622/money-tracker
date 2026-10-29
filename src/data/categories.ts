@@ -1,4 +1,5 @@
 import { computed, ref } from 'vue'
+import { t } from '../i18n'
 import type { IconName } from './icons'
 
 export type CategoryGroup = 'daily' | 'monthly'
@@ -88,17 +89,20 @@ export const categoryEdits = ref<CategoryEdit[]>([])
 
 const BUILT_IN = new Map(CATEGORIES.map((c) => [c.id, c]))
 
-/** Built-in categories with the user's edits applied, then the user's own, in the order added. */
-export function applyCategoryEdits(edits: CategoryEdit[]): Category[] {
+/**
+ * Built-in categories with the user's edits applied, then the user's own, in the order added.
+ * Built-in names the user hasn't changed go through translate.
+ */
+export function applyCategoryEdits(edits: CategoryEdit[], translate: (name: string) => string = (n) => n): Category[] {
   const byId = new Map(edits.map((e) => [e.id, e]))
-  const builtIn = CATEGORIES.map((c) => ({ ...c, ...byId.get(c.id), id: c.id, group: c.group }))
+  const builtIn = CATEGORIES.map((c) => ({ ...c, name: translate(c.name), ...byId.get(c.id), id: c.id, group: c.group }))
   const custom = edits
     .filter((e) => !BUILT_IN.has(e.id) && e.name && e.group && e.family && e.icon)
     .map((e) => ({ ...(e as Category), custom: true }))
   return [...builtIn, ...custom]
 }
 
-const all = computed(() => applyCategoryEdits(categoryEdits.value))
+const all = computed(() => applyCategoryEdits(categoryEdits.value, (name) => t(name)))
 const byId = computed(() => new Map(all.value.map((c) => [c.id, c])))
 
 /** Every category, hidden ones included. */

@@ -1,6 +1,7 @@
 import { nextTick, readonly, ref, watch } from 'vue'
 import { Capacitor } from '@capacitor/core'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { t } from '../i18n'
 import { loadJson, saveJson } from '../lib/storage'
 import { useAccountsStore } from '../stores/accounts'
 import { useCategoriesStore } from '../stores/categories'
@@ -228,7 +229,7 @@ async function runSync() {
       state.value = 'idle'
     } catch (e: any) {
       state.value = 'error'
-      error.value = navigator.onLine ? e?.message || 'Sync failed' : 'Offline. Will sync when you are back online.'
+      error.value = navigator.onLine ? e?.message || t('Sync failed') : t('Offline. Will sync when you are back online.')
     } finally {
       // Let the store watchers see this sync's own changes while they are still ignored.
       await nextTick()
@@ -325,7 +326,7 @@ async function signIn(provider: Provider) {
       options: { redirectTo: NATIVE_REDIRECT, skipBrowserRedirect: true },
     })
     if (e || !data.url) {
-      error.value = e?.message || 'Could not start sign-in.'
+      error.value = e?.message || t('Could not start sign-in.')
       busy.value = false
       return
     }

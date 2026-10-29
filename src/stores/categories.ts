@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed } from 'vue'
 import { CATEGORIES, allCategories, categoryEdits, type Category, type CategoryEdit, type CategoryGroup } from '../data/categories'
+import { t } from '../i18n'
 import { newId } from '../lib/id'
 import { hydrateAndPersist } from './persist'
 
@@ -27,7 +28,8 @@ export const useCategoriesStore = defineStore('categories', () => {
     let edit: CategoryEdit
     if (base) {
       edit = { id }
-      if (fields.name !== base.name) edit.name = fields.name
+      // Saving the shown (maybe translated) built-in name isn't a rename.
+      if (fields.name !== base.name && fields.name !== t(base.name)) edit.name = fields.name
       if (fields.family !== base.family) edit.family = fields.family
       if (fields.icon !== base.icon) edit.icon = fields.icon
       if (fields.hidden) edit.hidden = true

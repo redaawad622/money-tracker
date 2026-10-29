@@ -1,3 +1,5 @@
+import { locale } from '../i18n'
+
 // All dates are local calendar dates stored as "YYYY-MM-DD" strings.
 // Never derive them from toISOString(): that is UTC and shifts the day near midnight.
 
@@ -55,24 +57,24 @@ export function monthDates(key: string): string[] {
 
 export function formatMonth(key: string): string {
   const { year, month } = splitMonthKey(key)
-  return new Date(year, month - 1, 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+  return new Date(year, month - 1, 1).toLocaleDateString(locale(), { month: 'long', year: 'numeric' })
 }
 
 export function formatShortMonth(key: string): string {
   const { year, month } = splitMonthKey(key)
-  return new Date(year, month - 1, 1).toLocaleDateString('en-GB', { month: 'short' })
+  return new Date(year, month - 1, 1).toLocaleDateString(locale(), { month: 'short' })
 }
 
 export function formatDay(ymd: string): string {
-  return parseYmd(ymd).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })
+  return parseYmd(ymd).toLocaleDateString(locale(), { weekday: 'short', day: 'numeric', month: 'short' })
 }
 
 export function formatDayMonth(ymd: string): string {
-  return parseYmd(ymd).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+  return parseYmd(ymd).toLocaleDateString(locale(), { day: 'numeric', month: 'short' })
 }
 
 export function weekdayShort(ymd: string): string {
-  return parseYmd(ymd).toLocaleDateString('en-GB', { weekday: 'short' }).toUpperCase()
+  return parseYmd(ymd).toLocaleDateString(locale(), { weekday: 'short' }).toUpperCase()
 }
 
 /** 0 = Monday … 6 = Sunday */

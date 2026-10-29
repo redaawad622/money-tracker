@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { locale, t } from '../i18n'
 import { computed, shallowRef } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppIcon from '../components/AppIcon.vue'
@@ -14,7 +15,7 @@ const goals = useGoalsStore()
 const { settings } = useSettingsStore()
 const money = (n: number) => formatMoney(n, settings.currency)
 const today = todayYmd()
-const fullDate = (ymd: string) => parseYmd(ymd).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+const fullDate = (ymd: string) => parseYmd(ymd).toLocaleDateString(locale(), { day: 'numeric', month: 'short', year: 'numeric' })
 
 const goal = computed(() => goals.get(String(route.params.id)))
 if (!goal.value) void router.replace('/goals')
@@ -38,47 +39,47 @@ function addEntry() {
 }
 
 function removeEntry(id: string) {
-  if (goal.value && window.confirm('Remove this entry?')) goals.removeEntry(goal.value.id, id)
+  if (goal.value && window.confirm(t('Remove this entry?'))) goals.removeEntry(goal.value.id, id)
 }
 </script>
 
 <template>
   <main v-if="goal" class="page page--no-tabs">
     <header class="header">
-      <RouterLink to="/goals" class="icon-btn icon-btn--plain" aria-label="Back to goals"><AppIcon name="back" /></RouterLink>
+      <RouterLink to="/goals" class="icon-btn icon-btn--plain" :aria-label="t('Back to goals')"><AppIcon name="back" /></RouterLink>
       <h1 class="title">{{ goal.name }}</h1>
-      <RouterLink :to="`/goals/${goal.id}/edit`" class="icon-btn" aria-label="Edit goal"><AppIcon name="pencil" /></RouterLink>
+      <RouterLink :to="`/goals/${goal.id}/edit`" class="icon-btn" :aria-label="t('Edit goal')"><AppIcon name="pencil" /></RouterLink>
     </header>
 
     <section class="hero">
-      <span class="hero-label">Saved</span>
+      <span class="hero-label">{{ t('Saved') }}</span>
       <span class="hero-amount">{{ money(total) }}</span>
-      <span class="hero-label">of {{ money(goal.target) }}<template v-if="goal.targetDate"> by {{ fullDate(goal.targetDate) }}</template></span>
+      <span class="hero-label">{{ goal.targetDate ? t('of {amount} by {date}', { amount: money(goal.target), date: fullDate(goal.targetDate) }) : t('of {amount}', { amount: money(goal.target) }) }}</span>
       <span class="bar"><span class="bar-fill" :style="{ width: `${pct}%` }" /></span>
       <span class="hero-note">
-        <template v-if="pct >= 100">Goal reached.</template>
-        <template v-else-if="perMonth !== null">{{ money(perMonth) }} a month gets you there on time. {{ money(goal.target - total) }} to go.</template>
-        <template v-else>{{ money(goal.target - total) }} to go.</template>
+        <template v-if="pct >= 100">{{ t('Goal reached.') }}</template>
+        <template v-else-if="perMonth !== null">{{ t('{amount} a month gets you there on time.', { amount: money(perMonth) }) }} {{ t('{amount} to go.', { amount: money(goal.target - total) }) }}</template>
+        <template v-else>{{ t('{amount} to go.', { amount: money(goal.target - total) }) }}</template>
       </span>
     </section>
 
     <form class="card add" @submit.prevent="addEntry">
-      <div class="segments" role="group" aria-label="Put aside or take out">
-        <button type="button" class="segment" :class="{ 'segment--on': !takeOut }" :aria-pressed="!takeOut" @click="takeOut = false">Put aside</button>
-        <button type="button" class="segment" :class="{ 'segment--on': takeOut }" :aria-pressed="takeOut" @click="takeOut = true">Take out</button>
+      <div class="segments" role="group" :aria-label="t('Put aside or take out')">
+        <button type="button" class="segment" :class="{ 'segment--on': !takeOut }" :aria-pressed="!takeOut" @click="takeOut = false">{{ t('Put aside') }}</button>
+        <button type="button" class="segment" :class="{ 'segment--on': takeOut }" :aria-pressed="takeOut" @click="takeOut = true">{{ t('Take out') }}</button>
       </div>
       <div class="add-row">
         <label class="field add-amount">
-          Amount ({{ settings.currency }})
+          {{ t('Amount ({currency})', { currency: settings.currency }) }}
           <input v-model.number="amount" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" />
         </label>
         <label class="field add-date">
-          Date
+          {{ t('Date') }}
           <input v-model="date" type="date" :max="today" />
         </label>
       </div>
       <button type="submit" class="primary-btn" :disabled="!canAdd">
-        <AppIcon :name="takeOut ? 'down' : 'plus'" :stroke-width="2.4" /> {{ takeOut ? 'Take out' : 'Put aside' }}
+        <AppIcon :name="takeOut ? 'down' : 'plus'" :stroke-width="2.4" /> {{ takeOut ? t('Take out') : t('Put aside') }}
       </button>
     </form>
 
@@ -86,14 +87,14 @@ function removeEntry(id: string) {
       <div v-for="e in entries" :key="e.id" class="row">
         <span class="row-date">{{ formatDay(e.date) }}</span>
         <span class="row-amount" :class="{ 'row-amount--out': e.amount < 0 }">{{ e.amount < 0 ? '−' : '+' }}{{ money(Math.abs(e.amount)) }}</span>
-        <button type="button" class="icon-btn icon-btn--plain row-del" aria-label="Remove entry" @click="removeEntry(e.id)"><AppIcon name="trash" :size="18" /></button>
+        <button type="button" class="icon-btn icon-btn--plain row-del" :aria-label="t('Remove entry')" @click="removeEntry(e.id)"><AppIcon name="trash" :size="18" /></button>
       </div>
     </section>
   </main>
 </template>
 
 <style scoped>
-.header { display: flex; align-items: center; justify-content: space-between; gap: 4px; min-height: 48px; margin-left: -10px; }
+.header { display: flex; align-items: center; justify-content: space-between; gap: 4px; min-height: 48px; margin-inline-start: -10px; }
 .title { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hero { background: var(--accent); color: #fff; border-radius: 24px; padding: 20px; display: flex; flex-direction: column; gap: 6px; }
 .hero-label { font-size: 13px; font-weight: 600; opacity: 0.85; }
@@ -112,5 +113,5 @@ function removeEntry(id: string) {
 .row-date { flex: 1 1 auto; font-size: 14px; font-weight: 600; color: var(--muted); }
 .row-amount { font-size: 15px; font-weight: 700; color: var(--accent-ink); }
 .row-amount--out { color: var(--warn-ink); }
-.row-del { color: var(--muted); margin-right: -10px; }
+.row-del { color: var(--muted); margin-inline-end: -10px; }
 </style>

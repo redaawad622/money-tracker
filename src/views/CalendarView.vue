@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { lang, locale, t } from '../i18n'
 import { computed } from 'vue'
 import MonthSwitcher from '../components/MonthSwitcher.vue'
 import { formatDay, mondayIndex, monthDates, parseYmd, todayYmd } from '../lib/dates'
@@ -8,7 +9,10 @@ import { useBudgetStore } from '../stores/budget'
 import { useExpensesStore } from '../stores/expenses'
 import { useSettingsStore } from '../stores/settings'
 
-const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+// Monday first; 1 Jan 2024 was a Monday. Arabic short names are whole words, so it uses the narrow ones.
+const weekdays = computed(() =>
+  Array.from({ length: 7 }, (_, i) => new Date(2024, 0, 1 + i).toLocaleDateString(locale(), { weekday: lang.value === 'ar' ? 'narrow' : 'short' })),
+)
 
 const { month, isCurrentMonth, prev, next } = useViewMonth()
 const expenses = useExpensesStore()
@@ -44,7 +48,7 @@ const cells = computed(() => {
       amount: amount ? String(Math.round(amount)) : '',
       level: future ? 'future' : `l${level(amount, limits.value[i])}`,
       isToday: date === today,
-      aria: `${formatDay(date)}, ${future ? 'upcoming' : money(amount)}`,
+      aria: `${formatDay(date)}، ${future ? t('upcoming') : money(amount)}`,
     }
   })
   return [...blanks, ...days]
@@ -68,11 +72,11 @@ const stats = computed(() => {
   <main class="page">
     <header class="header">
       <MonthSwitcher :month="month" :can-go-next="!isCurrentMonth" @prev="prev" @next="next" />
-      <span class="muted spent">{{ money(summary.daily) }} spent</span>
+      <span class="muted spent">{{ t('{amount} spent', { amount: money(summary.daily) }) }}</span>
     </header>
 
     <section class="card calendar">
-      <div class="weekdays"><span v-for="w in WEEKDAYS" :key="w">{{ w }}</span></div>
+      <div class="weekdays"><span v-for="w in weekdays" :key="w">{{ w }}</span></div>
       <div class="grid">
         <template v-for="c in cells" :key="c.key">
           <div v-if="c.blank" class="cell cell--blank" />
@@ -83,22 +87,22 @@ const stats = computed(() => {
         </template>
       </div>
       <div class="legend">
-        <span>Less</span>
+        <span>{{ t('Less') }}</span>
         <span class="chip cell--l1" /><span class="chip cell--l2" /><span class="chip cell--l3" /><span class="chip cell--l4" />
-        <span>More</span>
+        <span>{{ t('More') }}</span>
       </div>
     </section>
 
     <section class="stats">
-      <div class="card stat"><span class="stat-label">Average per day</span><span class="stat-value">{{ money(stats.average) }}</span></div>
-      <div class="card stat"><span class="stat-label">Last 7 days</span><span class="stat-value">{{ money(stats.week) }}</span></div>
+      <div class="card stat"><span class="stat-label">{{ t('Average per day') }}</span><span class="stat-value">{{ money(stats.average) }}</span></div>
+      <div class="card stat"><span class="stat-label">{{ t('Last 7 days') }}</span><span class="stat-value">{{ money(stats.week) }}</span></div>
       <div class="card stat">
-        <span class="stat-label">Highest day<template v-if="stats.max.date"> · {{ formatDay(stats.max.date) }}</template></span>
+        <span class="stat-label">{{ t('Highest day') }}<template v-if="stats.max.date"> · {{ formatDay(stats.max.date) }}</template></span>
         <span class="stat-value">{{ money(stats.max.amount) }}</span>
       </div>
       <div class="card stat stat--warn">
-        <span class="stat-label">Over daily budget</span>
-        <span class="stat-value">{{ stats.over }} of {{ stats.count }} days</span>
+        <span class="stat-label">{{ t('Over daily budget') }}</span>
+        <span class="stat-value">{{ t('{n} of {total} days', { n: stats.over, total: stats.count }) }}</span>
       </div>
     </section>
   </main>

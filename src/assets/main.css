@@ -101,3 +101,8 @@ h1, h2, h3, p { margin: 0; }
 .empty {
   text-align: center; padding: 28px 16px; color: var(--muted); font-size: 14px; font-weight: 600;
 }
+
+/* Right-to-left (Arabic) */
+[dir='rtl'] .icon-flip { transform: scaleX(-1); }
+/* Arabic letters join up; tracking breaks the joins, and Manrope has no Arabic so the system Arabic font is used. */
+[dir='rtl'] * { letter-spacing: 0 !important; }

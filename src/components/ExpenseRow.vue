@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../i18n'
 import { computed } from 'vue'
 import { FAMILY_COLORS, categoryById } from '../data/categories'
 import { formatMoney } from '../lib/money'
@@ -14,8 +15,8 @@ const iconStyle = computed(() => {
 })
 const title = computed(() => expense.note.trim() || category.value.name)
 const subtitle = computed(() => {
-  const kind = expense.fromRewards ? 'From rewards' : category.value.group === 'monthly' ? 'Monthly bill' : 'Daily'
-  const parts = [expense.note.trim() ? `${category.value.name} · ${kind.toLowerCase()}` : kind]
+  const kind = expense.fromRewards ? t('From rewards') : category.value.group === 'monthly' ? t('Monthly bill') : t('Daily')
+  const parts = [expense.note.trim() ? `${category.value.name} · ${kind.toLocaleLowerCase()}` : kind]
   if (expense.store) parts.push(expense.store)
   return parts.join(' · ')
 })

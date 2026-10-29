@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../i18n'
 import { computed, shallowRef } from 'vue'
 import { FAMILY_COLORS, categoryById, type CategoryGroup } from '../data/categories'
 import { useCategoriesStore } from '../stores/categories'
@@ -42,7 +43,7 @@ function pickGroup(id: CategoryGroup) {
 
 <template>
   <div class="picker">
-    <div class="segments" role="group" aria-label="Category type">
+    <div class="segments" role="group" :aria-label="t('Category type')">
       <button
         v-for="g in GROUPS"
         :key="g.id"
@@ -52,7 +53,7 @@ function pickGroup(id: CategoryGroup) {
         :aria-pressed="group === g.id"
         @click="pickGroup(g.id)"
       >
-        {{ g.label }}
+        {{ t(g.label) }}
       </button>
     </div>
     <div class="grid">

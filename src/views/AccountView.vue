@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { locale, t } from '../i18n'
 import { computed, shallowRef } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppIcon from '../components/AppIcon.vue'
@@ -22,19 +23,19 @@ if (!account.value) void router.replace('/accounts')
 
 const kind = computed(() => ACCOUNT_KINDS.find((k) => k.id === account.value?.kind)!)
 const current = computed(() => (account.value ? accounts.balanceOf(account.value.id) : 0))
-const since = computed(() => (account.value ? new Date(account.value.startAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''))
+const since = computed(() => (account.value ? new Date(account.value.startAt).toLocaleDateString(locale(), { day: 'numeric', month: 'short', year: 'numeric' }) : ''))
 
-const nameOf = (id: string | null) => (id ? accounts.get(id)?.name ?? 'Deleted account' : 'Money in')
+const nameOf = (id: string | null) => (id ? accounts.get(id)?.name ?? t('Deleted account') : t('Money in'))
 const rows = computed(() =>
   (account.value ? accounts.movementsOf(account.value.id) : []).slice(0, 60).map((m) => {
     if (m.kind === 'expense') {
       const e = expenses.get(m.id)
       const c = e ? categoryById(e.categoryId) : null
-      return { ...m, to: `/expense/${m.id}`, title: e?.note || c?.name || 'Expense', sub: [formatDay(m.date), e?.store].filter(Boolean).join(' · ') }
+      return { ...m, to: `/expense/${m.id}`, title: e?.note || c?.name || t('Expense'), sub: [formatDay(m.date), e?.store].filter(Boolean).join(' · ') }
     }
-    const t = m.transfer!
-    const title = m.kind === 'in' ? (t.from ? `From ${nameOf(t.from)}` : 'Money in') : `To ${nameOf(t.to)}`
-    return { ...m, to: `/transfer/${t.id}`, title: t.note || title, sub: [formatDay(m.date), t.note ? title : ''].filter(Boolean).join(' · ') }
+    const tr = m.transfer!
+    const title = m.kind === 'in' ? (tr.from ? t('From {name}', { name: nameOf(tr.from) }) : t('Money in')) : t('To {name}', { name: nameOf(tr.to) })
+    return { ...m, to: `/transfer/${tr.id}`, title: tr.note || title, sub: [formatDay(m.date), tr.note ? title : ''].filter(Boolean).join(' · ') }
   }),
 )
 
@@ -56,34 +57,34 @@ function saveBalance() {
 <template>
   <main v-if="account" class="page page--no-tabs">
     <header class="header">
-      <RouterLink to="/accounts" class="icon-btn icon-btn--plain" aria-label="Back to accounts"><AppIcon name="back" /></RouterLink>
+      <RouterLink to="/accounts" class="icon-btn icon-btn--plain" :aria-label="t('Back to accounts')"><AppIcon name="back" /></RouterLink>
       <h1 class="title">{{ account.name }}</h1>
-      <RouterLink :to="`/accounts/${account.id}/edit`" class="icon-btn" aria-label="Edit account"><AppIcon name="pencil" /></RouterLink>
+      <RouterLink :to="`/accounts/${account.id}/edit`" class="icon-btn" :aria-label="t('Edit account')"><AppIcon name="pencil" /></RouterLink>
     </header>
 
     <section class="hero">
-      <span class="hero-label">{{ kind.label }} · balance</span>
+      <span class="hero-label">{{ t(kind.label) }} · {{ t('balance') }}</span>
       <span class="hero-amount">{{ money(current) }}</span>
-      <span class="hero-label">Counted from {{ money(account.startBalance) }} on {{ since }}</span>
+      <span class="hero-label">{{ t('Counted from {amount} on {date}', { amount: money(account.startBalance), date: since }) }}</span>
       <div class="hero-actions">
-        <RouterLink :to="{ path: '/transfer', query: { to: account.id } }" class="hero-btn"><AppIcon name="transfer" :size="18" />Move money</RouterLink>
-        <button type="button" class="hero-btn" @click="startSetBalance"><AppIcon name="pencil" :size="18" />Set balance</button>
+        <RouterLink :to="{ path: '/transfer', query: { to: account.id } }" class="hero-btn"><AppIcon name="transfer" :size="18" />{{ t('Move money') }}</RouterLink>
+        <button type="button" class="hero-btn" @click="startSetBalance"><AppIcon name="pencil" :size="18" />{{ t('Set balance') }}</button>
       </div>
     </section>
 
     <form v-if="editingBalance" class="card set" @submit.prevent="saveBalance">
       <label class="field">
-        What's in {{ account.name }} right now ({{ settings.currency }})
+        {{ t("What's in {name} right now ({currency})", { name: account.name, currency: settings.currency }) }}
         <input v-model.number="newBalance" type="number" inputmode="decimal" step="0.01" />
       </label>
-      <p class="muted help">Use this when the balance here doesn't match your real one. Only what happens from now on changes it.</p>
+      <p class="muted help">{{ t("Use this when the balance here doesn't match your real one. Only what happens from now on changes it.") }}</p>
       <div class="set-actions">
-        <button type="button" class="secondary-btn" @click="editingBalance = false">Cancel</button>
-        <button type="submit" class="secondary-btn secondary-btn--main" :disabled="typeof newBalance !== 'number'">Save</button>
+        <button type="button" class="secondary-btn" @click="editingBalance = false">{{ t('Cancel') }}</button>
+        <button type="submit" class="secondary-btn secondary-btn--main" :disabled="typeof newBalance !== 'number'">{{ t('Save') }}</button>
       </div>
     </form>
 
-    <p v-if="!rows.length" class="card empty">Nothing yet. Pick {{ account.name }} under "Paid with" when you add an expense.</p>
+    <p v-if="!rows.length" class="card empty">{{ t('Nothing yet. Pick {name} under "Paid with" when you add an expense.', { name: account.name }) }}</p>
     <section v-else class="card list">
       <RouterLink v-for="r in rows" :key="`${r.kind}:${r.id}`" :to="r.to" class="row">
         <span class="row-icon" :class="`row-icon--${r.kind}`"><AppIcon :name="r.kind === 'expense' ? 'shopping' : 'transfer'" :size="18" /></span>
@@ -98,7 +99,7 @@ function saveBalance() {
 </template>
 
 <style scoped>
-.header { display: flex; align-items: center; justify-content: space-between; gap: 4px; min-height: 48px; margin-left: -10px; }
+.header { display: flex; align-items: center; justify-content: space-between; gap: 4px; min-height: 48px; margin-inline-start: -10px; }
 .title { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hero { background: var(--accent); color: #fff; border-radius: 24px; padding: 20px; display: flex; flex-direction: column; gap: 4px; }
 .hero-label { font-size: 13px; font-weight: 600; opacity: 0.85; }
