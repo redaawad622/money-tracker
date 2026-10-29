@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { locale, t } from '../i18n'
 import { computed } from 'vue'
 import AccountButton from '../components/AccountButton.vue'
 import AppIcon from '../components/AppIcon.vue'
@@ -47,12 +48,14 @@ const warning = computed(() => {
   const used = Math.round((summary.value.spent / summary.value.budget) * 100)
   const threshold = settings.budgetWarningPercent
   if (threshold > 0 && used >= threshold) {
-    const days = `${daysLeft.value} ${daysLeft.value === 1 ? 'day' : 'days'}`
-    lines.push(`You've used ${used}% of this month's budget with ${days} left. That's ${money(perDayLeft.value)} a day from here.`)
+    const params = { used, n: daysLeft.value, amount: money(perDayLeft.value) }
+    lines.push(daysLeft.value === 1
+      ? t("You've used {used}% of this month's budget with 1 day left. That's {amount} a day from here.", params)
+      : t("You've used {used}% of this month's budget with {n} days left. That's {amount} a day from here.", params))
   }
   const todaySpent = expenses.totalForDate(today)
   const todayLimit = budget.limitForDate(today)
-  if (threshold > 0 && todaySpent > todayLimit) lines.push(`Today is ${money(todaySpent - todayLimit)} over its daily budget.`)
+  if (threshold > 0 && todaySpent > todayLimit) lines.push(t('Today is {amount} over its daily budget.', { amount: money(todaySpent - todayLimit) }))
   return lines.length ? lines : null
 })
 
@@ -99,8 +102,8 @@ const recentDays = computed(() =>
         date,
         weekday: weekdayShort(date),
         day: parseYmd(date).getDate(),
-        title: diff === 0 ? 'Today' : diff === 1 ? 'Yesterday' : parseYmd(date).toLocaleDateString('en-GB', { weekday: 'long' }),
-        detail: `${list.length} ${list.length === 1 ? 'expense' : 'expenses'} · ${names.slice(0, 3).join(', ')}`,
+        title: diff === 0 ? t('Today') : diff === 1 ? t('Yesterday') : parseYmd(date).toLocaleDateString(locale(), { weekday: 'long' }),
+        detail: `${list.length === 1 ? t('1 expense') : t('{n} expenses', { n: list.length })} · ${names.slice(0, 3).join(t(', '))}`,
         total: money(expenses.totalForDate(date)),
         isToday: diff === 0,
       }
@@ -114,37 +117,37 @@ const recentDays = computed(() =>
       <MonthSwitcher :month="month" :can-go-next="!isCurrentMonth" @prev="prev" @next="next" />
       <div class="header-actions">
         <AccountButton />
-        <RouterLink to="/settings" class="icon-btn" aria-label="Settings"><AppIcon name="gear" /></RouterLink>
+        <RouterLink to="/settings" class="icon-btn" :aria-label="t('Settings')"><AppIcon name="gear" /></RouterLink>
       </div>
     </header>
 
     <section class="hero" :class="{ 'hero--over': overBudget }">
       <div class="hero-top">
-        <span class="hero-label">Spent this month</span>
+        <span class="hero-label">{{ t('Spent this month') }}</span>
         <div class="hero-amounts">
           <span class="hero-spent">{{ money(summary.spent) }}</span>
-          <span class="hero-label">of {{ money(summary.budget) }}</span>
+          <span class="hero-label">{{ t('of {amount}', { amount: money(summary.budget) }) }}</span>
         </div>
       </div>
       <div class="progress"><div class="progress-fill" :style="{ width: `${pct}%` }" /></div>
       <div class="hero-stats">
         <div class="stat">
-          <span class="stat-label">{{ overBudget ? 'Over budget by' : 'Left to spend' }}</span>
+          <span class="stat-label">{{ overBudget ? t('Over budget by') : t('Left to spend') }}</span>
           <span class="stat-value">{{ money(Math.abs(summary.left)) }}</span>
         </div>
         <div v-if="isCurrentMonth" class="stat">
-          <span class="stat-label">Per day, {{ daysLeft }} {{ daysLeft === 1 ? 'day' : 'days' }} left</span>
+          <span class="stat-label">{{ daysLeft === 1 ? t('Per day, 1 day left') : t('Per day, {n} days left', { n: daysLeft }) }}</span>
           <span class="stat-value">{{ money(perDayLeft) }}</span>
         </div>
         <div v-else class="stat">
-          <span class="stat-label">Daily spending</span>
+          <span class="stat-label">{{ t('Daily spending') }}</span>
           <span class="stat-value">{{ money(summary.daily) }}</span>
         </div>
       </div>
       <RouterLink v-if="summary.fixed > 0" to="/fixed" class="hero-fixed">
         <AppIcon name="repeat" :size="16" />
-        Fixed subscriptions this month: {{ money(summary.fixed) }}
-        <template v-if="!settings.includeSubscriptionsInBudget">(not counted)</template>
+        {{ t('Fixed subscriptions this month: {amount}', { amount: money(summary.fixed) }) }}
+        <template v-if="!settings.includeSubscriptionsInBudget">{{ t('(not counted)') }}</template>
       </RouterLink>
     </section>
 
@@ -157,7 +160,7 @@ const recentDays = computed(() =>
 
     <RouterLink v-if="billsDueSoon.length" to="/fixed" class="card due">
       <span class="due-head">
-        <span class="section-title">Due soon</span>
+        <span class="section-title">{{ t('Due soon') }}</span>
         <AppIcon name="forward" :size="18" class="rewards-go" />
       </span>
       <span v-for="b in billsDueSoon" :key="b.key" class="due-row">
@@ -169,11 +172,11 @@ const recentDays = computed(() =>
 
     <div v-if="accounts.visible.length || goals.goals.length" class="tiles">
       <RouterLink v-if="accounts.visible.length" to="/accounts" class="card tile">
-        <span class="tile-head"><AppIcon name="wallet" :size="18" />Accounts</span>
+        <span class="tile-head"><AppIcon name="wallet" :size="18" />{{ t('Accounts') }}</span>
         <span class="tile-value">{{ money(accounts.total) }}</span>
       </RouterLink>
       <RouterLink v-if="goals.goals.length" to="/goals" class="card tile">
-        <span class="tile-head"><AppIcon name="target" :size="18" />Goals</span>
+        <span class="tile-head"><AppIcon name="target" :size="18" />{{ t('Goals') }}</span>
         <span class="tile-value">{{ money(goals.totalSaved) }}</span>
       </RouterLink>
     </div>
@@ -181,26 +184,26 @@ const recentDays = computed(() =>
     <RouterLink v-if="showRewards" to="/rewards" class="card rewards">
       <span class="rewards-icon"><AppIcon name="gift" /></span>
       <span class="rewards-text">
-        <span class="rewards-title">Reward pot {{ money(rewards.balance) }}</span>
-        <span class="rewards-sub">{{ monthRewards > 0 ? `+${money(monthRewards)} earned this month` : 'From Azkar and Workout' }}</span>
+        <span class="rewards-title">{{ t('Reward pot {amount}', { amount: money(rewards.balance) }) }}</span>
+        <span class="rewards-sub">{{ monthRewards > 0 ? t('+{amount} earned this month', { amount: money(monthRewards) }) : t('From Azkar and Workout') }}</span>
       </span>
       <AppIcon name="forward" :size="18" class="rewards-go" />
     </RouterLink>
 
     <section class="card">
       <div class="card-head">
-        <h2 class="section-title">Daily spending</h2>
-        <span class="hint">Avg {{ money(average) }} / day</span>
+        <h2 class="section-title">{{ t('Daily spending') }}</h2>
+        <span class="hint">{{ t('Avg {amount} / day', { amount: money(average) }) }}</span>
       </div>
       <DailyBarChart :bars="bars" :limits="budget.dailyLimits(month)" />
     </section>
 
     <section class="recent">
       <div class="card-head">
-        <h2 class="section-title">Recent days</h2>
-        <RouterLink :to="{ path: '/calendar', query: $route.query }" class="link">See all</RouterLink>
+        <h2 class="section-title">{{ t('Recent days') }}</h2>
+        <RouterLink :to="{ path: '/calendar', query: $route.query }" class="link">{{ t('See all') }}</RouterLink>
       </div>
-      <p v-if="recentDays.length === 0" class="card empty">No expenses yet this month. Tap + to add one.</p>
+      <p v-if="recentDays.length === 0" class="card empty">{{ t('No expenses yet this month. Tap + to add one.') }}</p>
       <RouterLink v-for="d in recentDays" :key="d.date" :to="`/day/${d.date}`" class="day-row card">
         <span class="day-badge" :class="{ 'day-badge--today': d.isToday }">
           <span class="day-badge-wd">{{ d.weekday }}</span><span class="day-badge-d">{{ d.day }}</span>

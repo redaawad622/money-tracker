@@ -1,5 +1,6 @@
 import { readonly, ref } from 'vue'
 import { Capacitor } from '@capacitor/core'
+import { t as tr } from '../i18n'
 import { loadJson, saveJson } from '../lib/storage'
 
 // Face ID (or Touch ID) on opening the app and on coming back to it, on the phone only. The device
@@ -22,7 +23,7 @@ async function unlock() {
   if (!locked.value || busy.value) return
   busy.value = true
   try {
-    await (await plugin()).NativeBiometric.verifyIdentity({ reason: 'Unlock Money Tracker', title: 'Money Tracker', useFallback: true })
+    await (await plugin()).NativeBiometric.verifyIdentity({ reason: tr('Unlock Money Tracker'), title: 'Money Tracker', useFallback: true })
     locked.value = false
   } catch {
     // Cancelled or failed: stay locked; the lock screen offers to try again.

@@ -1,3 +1,4 @@
+import { t } from '../i18n'
 import { daysBetween, parseYmd, toYmd } from './dates'
 import { dueDatesBetween, type Subscription } from './subscriptions'
 
@@ -25,9 +26,9 @@ export function reminderId(subId: string, dueDate: string): number {
 }
 
 export function whenDue(days: number): string {
-  if (days <= 0) return 'today'
-  if (days === 1) return 'tomorrow'
-  return `in ${days} days`
+  if (days <= 0) return t('today')
+  if (days === 1) return t('tomorrow')
+  return t('in {n} days', { n: days })
 }
 
 /** Unpaid due dates within the next horizon days, each with its reminder time, soonest first. */
@@ -55,8 +56,8 @@ export function upcomingReminders(
         subId: sub.id,
         dueDate: due,
         at,
-        title: `${sub.name} is due ${whenDue(days)}`,
-        body: `${formatAmount(sub.amount)}. Mark it paid in Fixed once it's done.`,
+        title: t('{name} is due {when}', { name: sub.name, when: whenDue(days) }),
+        body: t("{amount}. Mark it paid in Fixed once it's done.", { amount: formatAmount(sub.amount) }),
       })
     }
   }

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../i18n'
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppIcon from '../components/AppIcon.vue'
@@ -51,7 +52,7 @@ const SECTIONS: { type: IncomeType; title: string; hint: string; empty: string }
   { type: 'project', title: 'Personal projects', hint: 'Cafe, restaurant, side business…', empty: 'Add a project, then log what it earns and costs.' },
 ]
 
-const range = (start: string, end: string | null) => `${formatDayMonth(start)} ${start.slice(0, 4)} – ${end ? `${formatDayMonth(end)} ${end.slice(0, 4)}` : 'ongoing'}`
+const range = (start: string, end: string | null) => `${formatDayMonth(start)} ${start.slice(0, 4)} – ${end ? `${formatDayMonth(end)} ${end.slice(0, 4)}` : t('ongoing')}`
 const newLink = (type: IncomeType) => ({ path: `/income/new/${type}`, query: route.query })
 const editLink = (id: string) => ({ path: `/income/${id}`, query: route.query })
 const projectLink = (id: string) => ({ path: `/income/project/${id}`, query: route.query })
@@ -61,20 +62,20 @@ const projectLink = (id: string) => ({ path: `/income/project/${id}`, query: rou
   <main class="page">
     <header class="header">
       <div class="switcher">
-        <button type="button" class="icon-btn icon-btn--plain" aria-label="Previous year" @click="shiftYear(-1)"><AppIcon name="back" /></button>
-        <h1 class="title">Income {{ year }}</h1>
-        <button type="button" class="icon-btn icon-btn--plain" aria-label="Next year" :disabled="year >= thisYear + 1" @click="shiftYear(1)"><AppIcon name="forward" /></button>
+        <button type="button" class="icon-btn icon-btn--plain" :aria-label="t('Previous year')" @click="shiftYear(-1)"><AppIcon name="back" /></button>
+        <h1 class="title">{{ t('Income {year}', { year }) }}</h1>
+        <button type="button" class="icon-btn icon-btn--plain" :aria-label="t('Next year')" :disabled="year >= thisYear + 1" @click="shiftYear(1)"><AppIcon name="forward" /></button>
       </div>
     </header>
 
     <section class="summary">
       <div class="summary-grid">
         <div class="summary-item">
-          <span class="summary-label">Total income {{ year }}</span>
+          <span class="summary-label">{{ t('Total income {year}', { year }) }}</span>
           <span class="summary-value">{{ money(summary.total) }}</span>
         </div>
         <div class="summary-item">
-          <span class="summary-label">{{ year === thisYear ? 'Coming in each month' : 'Monthly at year end' }}</span>
+          <span class="summary-label">{{ year === thisYear ? t('Coming in each month') : t('Monthly at year end') }}</span>
           <span class="summary-value">{{ money(recurring) }}</span>
         </div>
       </div>
@@ -82,7 +83,7 @@ const projectLink = (id: string) => ({ path: `/income/project/${id}`, query: rou
       <div class="breakdown">
         <div v-for="b in BREAKDOWN" :key="b.key" class="breakdown-row">
           <AppIcon :name="b.icon" :size="16" />
-          <span class="breakdown-label">{{ b.label }}</span>
+          <span class="breakdown-label">{{ t(b.label) }}</span>
           <span class="breakdown-value">{{ money(summary[b.key]) }}</span>
         </div>
       </div>
@@ -91,33 +92,33 @@ const projectLink = (id: string) => ({ path: `/income/project/${id}`, query: rou
     <section v-for="sec in SECTIONS" :key="sec.type" class="group">
       <div class="group-head">
         <div class="titles">
-          <h2 class="section-title">{{ sec.title }}</h2>
-          <span class="muted small">{{ sec.hint }}</span>
+          <h2 class="section-title">{{ t(sec.title) }}</h2>
+          <span class="muted small">{{ t(sec.hint) }}</span>
         </div>
-        <RouterLink :to="newLink(sec.type)" class="icon-btn icon-btn--small" :aria-label="`Add ${sec.title.toLowerCase()}`">
+        <RouterLink :to="newLink(sec.type)" class="icon-btn icon-btn--small" :aria-label="t('Add: {what}', { what: t(sec.title) })">
           <AppIcon name="plus" :size="20" :stroke-width="2.4" />
         </RouterLink>
       </div>
 
       <template v-if="sec.type === 'salary'">
-        <p v-if="!income.salaries.length" class="card empty">{{ sec.empty }}</p>
+        <p v-if="!income.salaries.length" class="card empty">{{ t(sec.empty) }}</p>
         <RouterLink v-for="s in income.salaries" :key="s.id" :to="editLink(s.id)" class="card row">
           <span class="icon icon--salary"><AppIcon name="wallet" /></span>
           <span class="text">
             <span class="name">{{ s.name }}</span>
-            <span class="muted small">{{ money(s.amount) }} / month · {{ range(s.start, s.end) }}</span>
+            <span class="muted small">{{ t('{amount} / month', { amount: money(s.amount) }) }} · {{ range(s.start, s.end) }}</span>
           </span>
           <span class="amount">{{ money(salaryForYear(s, year)) }}</span>
         </RouterLink>
       </template>
 
       <template v-else-if="sec.type === 'investment'">
-        <p v-if="!income.investments.length" class="card empty">{{ sec.empty }}</p>
+        <p v-if="!income.investments.length" class="card empty">{{ t(sec.empty) }}</p>
         <RouterLink v-for="i in income.investments" :key="i.id" :to="editLink(i.id)" class="card row">
           <span class="icon icon--inv"><AppIcon name="trend" /></span>
           <span class="text">
-            <span class="name">{{ i.name }} <span class="tag">{{ pct(i.ratePercent) }} / year</span></span>
-            <span class="muted small">{{ money(i.principal) }} invested · {{ money(investmentYearlyReturn(i)) }} / year ({{ money(investmentMonthlyReturn(i)) }} / month)</span>
+            <span class="name">{{ i.name }} <span class="tag">{{ t('{amount} / year', { amount: pct(i.ratePercent) }) }}</span></span>
+            <span class="muted small">{{ t('{amount} invested', { amount: money(i.principal) }) }} · {{ t('{amount} / year', { amount: money(investmentYearlyReturn(i)) }) }} ({{ t('{amount} / month', { amount: money(investmentMonthlyReturn(i)) }) }})</span>
           </span>
           <span class="amount">{{ money(investmentReturnForYear(i, year)) }}</span>
         </RouterLink>
@@ -125,31 +126,31 @@ const projectLink = (id: string) => ({ path: `/income/project/${id}`, query: rou
 
       <template v-else-if="sec.type === 'deal'">
         <div class="card report">
-          <span class="report-title">Deals report {{ year }}</span>
+          <span class="report-title">{{ t('Deals report {year}', { year }) }}</span>
           <div class="report-grid">
-            <div class="report-item"><span class="muted small">Deals closed</span><span class="report-value">{{ report.count }}</span></div>
-            <div class="report-item"><span class="muted small">Return</span><span class="report-value">{{ pct(report.returnPercent) }}</span></div>
-            <div class="report-item"><span class="muted small">Invested</span><span class="report-value">{{ money(report.invested) }}</span></div>
-            <div class="report-item"><span class="muted small">Earned</span><span class="report-value report-value--good">{{ money(report.earned) }}</span></div>
+            <div class="report-item"><span class="muted small">{{ t('Deals closed') }}</span><span class="report-value">{{ report.count }}</span></div>
+            <div class="report-item"><span class="muted small">{{ t('Return') }}</span><span class="report-value">{{ pct(report.returnPercent) }}</span></div>
+            <div class="report-item"><span class="muted small">{{ t('Invested') }}</span><span class="report-value">{{ money(report.invested) }}</span></div>
+            <div class="report-item"><span class="muted small">{{ t('Earned') }}</span><span class="report-value report-value--good">{{ money(report.earned) }}</span></div>
           </div>
-          <span v-if="report.best && report.count > 1" class="muted small">Best: {{ report.best.name }}, {{ pct(dealReturnPercent(report.best)) }}</span>
+          <span v-if="report.best && report.count > 1" class="muted small">{{ t('Best: {name}, {pct}', { name: report.best.name, pct: pct(dealReturnPercent(report.best)) }) }}</span>
         </div>
-        <p v-if="!income.deals.length" class="card empty">{{ sec.empty }}</p>
+        <p v-if="!income.deals.length" class="card empty">{{ t(sec.empty) }}</p>
         <RouterLink v-for="d in yearDeals" :key="d.id" :to="editLink(d.id)" class="card row">
           <span class="icon icon--deal"><AppIcon name="deal" /></span>
           <span class="text">
             <span class="name">{{ d.name }} <span class="tag">{{ pct(dealReturnPercent(d)) }}</span></span>
-            <span class="muted small">{{ money(d.invested) }} in · {{ formatPeriod(dealDays(d)) }} · ends {{ formatDayMonth(d.end) }}</span>
+            <span class="muted small">{{ t('{amount} in', { amount: money(d.invested) }) }} · {{ formatPeriod(dealDays(d)) }} · {{ t('ends {date}', { date: formatDayMonth(d.end) }) }}</span>
           </span>
           <span class="amount amount--good">+{{ money(d.earned) }}</span>
         </RouterLink>
         <template v-if="openDeals.length">
-          <span class="muted small sub-title">Still running after {{ year }}</span>
+          <span class="muted small sub-title">{{ t('Still running after {year}', { year }) }}</span>
           <RouterLink v-for="d in openDeals" :key="d.id" :to="editLink(d.id)" class="card row row--soft">
             <span class="icon icon--deal"><AppIcon name="deal" /></span>
             <span class="text">
               <span class="name">{{ d.name }}</span>
-              <span class="muted small">{{ money(d.invested) }} in · ends {{ formatDayMonth(d.end) }} {{ d.end.slice(0, 4) }}</span>
+              <span class="muted small">{{ t('{amount} in', { amount: money(d.invested) }) }} · {{ t('ends {date}', { date: `${formatDayMonth(d.end)} ${d.end.slice(0, 4)}` }) }}</span>
             </span>
             <span class="amount muted">+{{ money(d.earned) }}</span>
           </RouterLink>
@@ -157,12 +158,12 @@ const projectLink = (id: string) => ({ path: `/income/project/${id}`, query: rou
       </template>
 
       <template v-else>
-        <p v-if="!income.projects.length" class="card empty">{{ sec.empty }}</p>
+        <p v-if="!income.projects.length" class="card empty">{{ t(sec.empty) }}</p>
         <RouterLink v-for="p in income.projects" :key="p.id" :to="projectLink(p.id)" class="card row">
           <span class="icon icon--project"><AppIcon name="store" /></span>
           <span class="text">
             <span class="name">{{ p.name }}</span>
-            <span class="muted small">{{ money(projectTotals(p, year).earnings) }} earned · {{ money(projectTotals(p, year).costs) }} costs</span>
+            <span class="muted small">{{ t('{amount} earned', { amount: money(projectTotals(p, year).earnings) }) }} · {{ t('{amount} costs', { amount: money(projectTotals(p, year).costs) }) }}</span>
           </span>
           <span class="amount" :class="projectTotals(p, year).net < 0 ? 'amount--bad' : 'amount--good'">{{ money(projectTotals(p, year).net) }}</span>
         </RouterLink>

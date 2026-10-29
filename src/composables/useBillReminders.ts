@@ -63,7 +63,7 @@ async function start(openRoute: (path: string) => void) {
   started = true
   const { settings } = useSettingsStore()
   const subs = useSubscriptionsStore()
-  watch(() => [subs.subscriptions, settings.billReminders, settings.billReminderDays, settings.currency], schedule, { deep: true })
+  watch(() => [subs.subscriptions, settings.billReminders, settings.billReminderDays, settings.currency, settings.language], schedule, { deep: true })
   const { App } = await import('@capacitor/app')
   App.addListener('resume', schedule)
   const ln = await plugin()

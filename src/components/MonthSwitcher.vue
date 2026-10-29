@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../i18n'
 import { computed } from 'vue'
 import { formatMonth } from '../lib/dates'
 import AppIcon from './AppIcon.vue'
@@ -11,11 +12,11 @@ const label = computed(() => formatMonth(month))
 
 <template>
   <div class="switcher">
-    <button type="button" class="icon-btn icon-btn--plain" aria-label="Previous month" @click="emit('prev')">
+    <button type="button" class="icon-btn icon-btn--plain" :aria-label="t('Previous month')" @click="emit('prev')">
       <AppIcon name="back" />
     </button>
     <h1 class="label">{{ label }}</h1>
-    <button type="button" class="icon-btn icon-btn--plain" aria-label="Next month" :disabled="!canGoNext" @click="emit('next')">
+    <button type="button" class="icon-btn icon-btn--plain" :aria-label="t('Next month')" :disabled="!canGoNext" @click="emit('next')">
       <AppIcon name="forward" />
     </button>
   </div>

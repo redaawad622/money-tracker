@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../i18n'
 import { computed, shallowRef } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppIcon from '../components/AppIcon.vue'
@@ -40,7 +41,7 @@ function save() {
 }
 
 function remove() {
-  if (!editing || !window.confirm('Delete this transfer?')) return
+  if (!editing || !window.confirm(t('Delete this transfer?'))) return
   accounts.removeTransfer(editing.id)
   close()
 }
@@ -49,48 +50,48 @@ function remove() {
 <template>
   <main class="page page--no-tabs">
     <header class="header">
-      <button type="button" class="icon-btn" aria-label="Close" @click="close"><AppIcon name="close" /></button>
-      <h1 class="title">{{ editing ? 'Edit transfer' : 'Move money' }}</h1>
+      <button type="button" class="icon-btn" :aria-label="t('Close')" @click="close"><AppIcon name="close" /></button>
+      <h1 class="title">{{ editing ? t('Edit transfer') : t('Move money') }}</h1>
       <div class="spacer" />
     </header>
 
     <p v-if="!options.length" class="card empty">
-      Add an account first. <RouterLink to="/accounts/new" class="link">Add account</RouterLink>
+      {{ t('Add an account first.') }} <RouterLink to="/accounts/new" class="link">{{ t('Add account') }}</RouterLink>
     </p>
     <form v-else class="fields" @submit.prevent="save">
       <label class="field">
-        From
+        {{ t('From') }}
         <select v-model="from">
-          <option value="">Money in (salary, gift…)</option>
+          <option value="">{{ t('Money in (salary, gift…)') }}</option>
           <option v-for="a in options" :key="a.id" :value="a.id">{{ a.name }}</option>
         </select>
       </label>
       <label class="field">
-        To
+        {{ t('To') }}
         <select v-model="to">
           <option v-for="a in options" :key="a.id" :value="a.id">{{ a.name }}</option>
         </select>
       </label>
-      <p v-if="from === to" class="warn">Pick two different accounts.</p>
+      <p v-if="from === to" class="warn">{{ t('Pick two different accounts.') }}</p>
       <label class="field">
-        Amount ({{ settings.currency }})
+        {{ t('Amount ({currency})', { currency: settings.currency }) }}
         <input v-model.number="amount" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" required />
       </label>
       <label class="field">
-        Date
+        {{ t('Date') }}
         <input v-model="date" type="date" required />
       </label>
       <label class="field">
-        Note (optional)
-        <input v-model="note" type="text" maxlength="60" placeholder="e.g. ATM withdrawal, salary" />
+        {{ t('Note (optional)') }}
+        <input v-model="note" type="text" maxlength="60" :placeholder="t('e.g. ATM withdrawal, salary')" />
       </label>
-      <p class="muted help">Moving money between your own accounts isn't spending, so it never counts against your budget.</p>
+      <p class="muted help">{{ t("Moving money between your own accounts isn't spending, so it never counts against your budget.") }}</p>
 
       <button type="submit" class="primary-btn" :disabled="!canSave">
-        <AppIcon name="check" :stroke-width="2.4" /> Save
+        <AppIcon name="check" :stroke-width="2.4" /> {{ t('Save') }}
       </button>
       <button v-if="editing" type="button" class="danger-btn" @click="remove">
-        <AppIcon name="trash" /> Delete transfer
+        <AppIcon name="trash" /> {{ t('Delete transfer') }}
       </button>
     </form>
   </main>

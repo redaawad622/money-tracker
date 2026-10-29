@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../i18n'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import type { IconName } from '../data/icons'
@@ -21,7 +22,7 @@ const activeName = computed(() => route.name)
 </script>
 
 <template>
-  <nav class="tabbar" aria-label="Main">
+  <nav class="tabbar" :aria-label="t('Main')">
     <div class="tabbar-inner">
       <RouterLink
         v-for="tab in LEFT"
@@ -31,9 +32,9 @@ const activeName = computed(() => route.name)
         :class="{ 'tab--active': activeName === tab.name }"
         :aria-current="activeName === tab.name ? 'page' : undefined"
       >
-        <AppIcon :name="tab.icon" :size="22" />{{ tab.label }}
+        <AppIcon :name="tab.icon" :size="22" />{{ t(tab.label) }}
       </RouterLink>
-      <RouterLink to="/add" class="fab" aria-label="Add expense">
+      <RouterLink to="/add" class="fab" :aria-label="t('Add expense')">
         <AppIcon name="plus" :size="26" :stroke-width="2.4" />
       </RouterLink>
       <RouterLink
@@ -44,7 +45,7 @@ const activeName = computed(() => route.name)
         :class="{ 'tab--active': activeName === tab.name }"
         :aria-current="activeName === tab.name ? 'page' : undefined"
       >
-        <AppIcon :name="tab.icon" :size="22" />{{ tab.label }}
+        <AppIcon :name="tab.icon" :size="22" />{{ t(tab.label) }}
       </RouterLink>
     </div>
   </nav>

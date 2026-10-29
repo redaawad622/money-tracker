@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../i18n'
 import { computed, shallowRef } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppIcon from '../components/AppIcon.vue'
@@ -38,7 +39,7 @@ function save() {
 
 function remove() {
   if (!editing) return
-  const ask = builtIn ? `Put "${builtIn.name}" back as it was?` : `Delete "${editing.name}"?`
+  const ask = builtIn ? t('Put "{name}" back as it was?', { name: t(builtIn.name) }) : t('Delete "{name}"?', { name: editing.name })
   if (!window.confirm(ask)) return
   categories.remove(editing.id)
   void router.replace(back)
@@ -48,33 +49,33 @@ function remove() {
 <template>
   <main class="page page--no-tabs">
     <header class="header">
-      <RouterLink :to="back" class="icon-btn" aria-label="Close"><AppIcon name="close" /></RouterLink>
-      <h1 class="title">{{ editing ? 'Edit category' : group === 'monthly' ? 'New monthly bill' : 'New daily category' }}</h1>
+      <RouterLink :to="back" class="icon-btn" :aria-label="t('Close')"><AppIcon name="close" /></RouterLink>
+      <h1 class="title">{{ editing ? t('Edit category') : group === 'monthly' ? t('New monthly bill') : t('New daily category') }}</h1>
       <div class="spacer" />
     </header>
 
     <form class="fields" @submit.prevent="save">
       <div class="preview" :style="{ color: FAMILY_COLORS[family].ink, background: FAMILY_COLORS[family].tint }">
         <AppIcon :name="icon" :size="28" />
-        <span class="preview-name">{{ name.trim() || 'Category' }}</span>
+        <span class="preview-name">{{ name.trim() || t('Category') }}</span>
       </div>
       <label class="field">
-        Name
-        <input v-model="name" type="text" placeholder="e.g. Maintenance, Pets, Gym" maxlength="24" required />
+        {{ t('Name') }}
+        <input v-model="name" type="text" :placeholder="t('e.g. Maintenance, Pets, Gym')" maxlength="24" required />
       </label>
       <fieldset class="field set">
-        <legend class="legend">Colour</legend>
+        <legend class="legend">{{ t('Colour') }}</legend>
         <div class="swatches">
           <button
             v-for="f in FAMILIES" :key="f" type="button" class="swatch"
             :class="{ 'swatch--on': family === f }" :aria-pressed="family === f"
             :style="{ background: FAMILY_COLORS[f].tint, color: FAMILY_COLORS[f].ink, borderColor: family === f ? FAMILY_COLORS[f].ink : 'transparent' }"
             @click="family = f"
-          >{{ FAMILY_NAMES[f] }}</button>
+          >{{ t(FAMILY_NAMES[f]) }}</button>
         </div>
       </fieldset>
       <fieldset class="field set">
-        <legend class="legend">Icon</legend>
+        <legend class="legend">{{ t('Icon') }}</legend>
         <div class="icons">
           <button
             v-for="i in CATEGORY_ICONS" :key="i" type="button" class="icon-tile"
@@ -85,23 +86,23 @@ function remove() {
       </fieldset>
       <div class="card show-row">
         <div class="show-text">
-          <span class="show-title">Show when adding expenses</span>
-          <span class="muted show-hint">Hidden categories stay on past expenses and in reports.</span>
+          <span class="show-title">{{ t('Show when adding expenses') }}</span>
+          <span class="muted show-hint">{{ t('Hidden categories stay on past expenses and in reports.') }}</span>
         </div>
-        <ToggleSwitch v-model="shown" label="Show when adding expenses" />
+        <ToggleSwitch v-model="shown" :label="t('Show when adding expenses')" />
       </div>
 
       <button type="submit" class="primary-btn" :disabled="!canSave">
-        <AppIcon name="check" :stroke-width="2.4" /> Save
+        <AppIcon name="check" :stroke-width="2.4" /> {{ t('Save') }}
       </button>
       <button v-if="editing && builtIn && changed" type="button" class="danger-btn" @click="remove">
-        <AppIcon name="repeat" /> Reset to "{{ builtIn.name }}"
+        <AppIcon name="repeat" /> {{ t('Reset to "{name}"', { name: t(builtIn.name) }) }}
       </button>
       <template v-if="editing && !builtIn">
         <button v-if="!used" type="button" class="danger-btn" @click="remove">
-          <AppIcon name="trash" /> Delete category
+          <AppIcon name="trash" /> {{ t('Delete category') }}
         </button>
-        <p v-else class="muted help">Expenses use this category, so it can't be deleted. Hide it instead.</p>
+        <p v-else class="muted help">{{ t("Expenses use this category, so it can't be deleted. Hide it instead.") }}</p>
       </template>
     </form>
   </main>

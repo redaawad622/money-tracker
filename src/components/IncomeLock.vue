@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../i18n'
 import { nextTick, onMounted, ref, shallowRef } from 'vue'
 import AppIcon from './AppIcon.vue'
 import { useIncomeLock } from '../composables/useIncomeLock'
@@ -25,11 +26,11 @@ async function submit() {
 <template>
   <main class="page lock">
     <span class="lock-icon"><AppIcon name="coins" :size="28" /></span>
-    <h1 class="title">Income is locked</h1>
-    <p class="muted sub">Enter your Income password.</p>
+    <h1 class="title">{{ t('Income is locked') }}</h1>
+    <p class="muted sub">{{ t('Enter your Income password.') }}</p>
     <form class="form" @submit.prevent="submit">
       <label class="field">
-        <span class="visually-hidden">Password</span>
+        <span class="visually-hidden">{{ t('Password') }}</span>
         <input
           ref="field"
           v-model="password"
@@ -37,11 +38,11 @@ async function submit() {
           autocomplete="current-password"
           :aria-invalid="wrong"
           aria-describedby="income-lock-error"
-          placeholder="Password"
+          :placeholder="t('Password')"
         />
       </label>
-      <p id="income-lock-error" class="error" role="alert">{{ wrong ? 'Wrong password. Try again.' : '' }}</p>
-      <button type="submit" class="primary-btn" :disabled="!password || busy">Unlock</button>
+      <p id="income-lock-error" class="error" role="alert">{{ wrong ? t('Wrong password. Try again.') : '' }}</p>
+      <button type="submit" class="primary-btn" :disabled="!password || busy">{{ t('Unlock') }}</button>
     </form>
   </main>
 </template>

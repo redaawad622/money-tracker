@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { reactive } from 'vue'
+import type { Lang } from '../i18n'
 import { hydrateAndPersist } from './persist'
 
 export interface Settings {
@@ -18,11 +19,13 @@ export interface Settings {
   billReminderDays: number
   /** Warn on Overview once this share of the monthly budget is spent; 0 turns it off. */
   budgetWarningPercent: number
+  /** App language; Arabic also turns the layout right-to-left. */
+  language: Lang
 }
 
 const DEFAULTS: Settings = {
   currency: '$', monthlyBudget: 2000, includeSubscriptionsInBudget: true, spreadDailyDifference: false, azkarReward: 0, workoutReward: 0,
-  billReminders: false, billReminderDays: 1, budgetWarningPercent: 80,
+  billReminders: false, billReminderDays: 1, budgetWarningPercent: 80, language: 'en',
 }
 
 export const useSettingsStore = defineStore('settings', () => {

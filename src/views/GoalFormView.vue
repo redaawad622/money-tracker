@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../i18n'
 import { computed, shallowRef } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppIcon from '../components/AppIcon.vue'
@@ -31,7 +32,7 @@ function save() {
 }
 
 function remove() {
-  if (!editing || !window.confirm(`Delete "${editing.name}" and its history? The money itself stays wherever you keep it.`)) return
+  if (!editing || !window.confirm(t('Delete "{name}" and its history? The money itself stays wherever you keep it.', { name: editing.name }))) return
   goals.remove(editing.id)
   void router.replace('/goals')
 }
@@ -40,31 +41,31 @@ function remove() {
 <template>
   <main class="page page--no-tabs">
     <header class="header">
-      <RouterLink :to="back" class="icon-btn" aria-label="Close"><AppIcon name="close" /></RouterLink>
-      <h1 class="title">{{ editing ? 'Edit goal' : 'New goal' }}</h1>
+      <RouterLink :to="back" class="icon-btn" :aria-label="t('Close')"><AppIcon name="close" /></RouterLink>
+      <h1 class="title">{{ editing ? t('Edit goal') : t('New goal') }}</h1>
       <div class="spacer" />
     </header>
 
     <form class="fields" @submit.prevent="save">
       <label class="field">
-        Name
-        <input v-model="name" type="text" placeholder="e.g. New car, Eid, Emergency fund" maxlength="40" required />
+        {{ t('Name') }}
+        <input v-model="name" type="text" :placeholder="t('e.g. New car, Eid, Emergency fund')" maxlength="40" required />
       </label>
       <label class="field">
-        Target ({{ settings.currency }})
+        {{ t('Target ({currency})', { currency: settings.currency }) }}
         <input v-model.number="target" type="number" inputmode="decimal" min="0" step="1" placeholder="0" required />
       </label>
       <label class="field">
-        Reach it by (optional)
+        {{ t('Reach it by (optional)') }}
         <input v-model="targetDate" type="date" :min="todayYmd()" />
       </label>
-      <p class="muted help">With a date, the goal shows how much to put aside each month to get there on time.</p>
+      <p class="muted help">{{ t('With a date, the goal shows how much to put aside each month to get there on time.') }}</p>
 
       <button type="submit" class="primary-btn" :disabled="!canSave">
-        <AppIcon name="check" :stroke-width="2.4" /> Save
+        <AppIcon name="check" :stroke-width="2.4" /> {{ t('Save') }}
       </button>
       <button v-if="editing" type="button" class="danger-btn" @click="remove">
-        <AppIcon name="trash" /> Delete goal
+        <AppIcon name="trash" /> {{ t('Delete goal') }}
       </button>
     </form>
   </main>

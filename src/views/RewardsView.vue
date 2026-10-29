@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../i18n'
 import { computed } from 'vue'
 import AppIcon from '../components/AppIcon.vue'
 import ExpenseRow from '../components/ExpenseRow.vue'
@@ -25,35 +26,35 @@ const off = computed(() => !(settings.azkarReward > 0) && !(settings.workoutRewa
 <template>
   <main class="page page--no-tabs">
     <header class="header">
-      <RouterLink to="/" class="icon-btn icon-btn--plain" aria-label="Back to overview"><AppIcon name="back" /></RouterLink>
-      <h1 class="title">Rewards</h1>
+      <RouterLink to="/" class="icon-btn icon-btn--plain" :aria-label="t('Back to overview')"><AppIcon name="back" /></RouterLink>
+      <h1 class="title">{{ t('Rewards') }}</h1>
     </header>
 
     <section class="hero">
-      <span class="hero-label">In the reward pot</span>
+      <span class="hero-label">{{ t('In the reward pot') }}</span>
       <span class="hero-amount">{{ money(rewards.balance) }}</span>
       <div class="hero-stats">
-        <div class="stat"><span class="stat-label">Earned</span><span class="stat-value">{{ money(rewards.earned) }}</span></div>
-        <div class="stat"><span class="stat-label">Spent</span><span class="stat-value">{{ money(rewards.spent) }}</span></div>
+        <div class="stat"><span class="stat-label">{{ t('Earned') }}</span><span class="stat-value">{{ money(rewards.earned) }}</span></div>
+        <div class="stat"><span class="stat-label">{{ t('Spent') }}</span><span class="stat-value">{{ money(rewards.spent) }}</span></div>
       </div>
     </section>
 
     <p v-if="off" class="card empty">
-      Set a reward amount in <RouterLink to="/settings" class="link">Settings</RouterLink> to start earning from Azkar and Workout.
+      {{ t('Set a reward amount in') }} <RouterLink to="/settings" class="link">{{ t('Settings') }}</RouterLink> {{ t('to start earning from Azkar and Workout.') }}
     </p>
     <p v-else-if="!account.user.value" class="card empty">
-      Sign in with the same account here, in Azkar Tracker and in Workout Tracker to earn rewards.
+      {{ t('Sign in with the same account here, in Azkar Tracker and in Workout Tracker to earn rewards.') }}
     </p>
 
     <section class="group">
-      <h2 class="section-title">Earned</h2>
-      <p v-if="list.length === 0" class="card empty">Nothing yet. Finish a 1,000-round in Azkar or reach 30 workout days.</p>
+      <h2 class="section-title">{{ t('Earned') }}</h2>
+      <p v-if="list.length === 0" class="card empty">{{ t('Nothing yet. Finish a 1,000-round in Azkar or reach 30 workout days.') }}</p>
       <div v-else class="card rows">
         <div v-for="r in list" :key="r.id" class="row">
           <span class="icon" :class="`icon--${r.source}`"><AppIcon :name="r.source === 'azkar' ? 'beads' : 'dumbbell'" /></span>
           <span class="text">
             <span class="row-title">{{ r.label }}</span>
-            <span class="row-sub">{{ r.source === 'azkar' ? 'Azkar' : 'Workout' }} · {{ formatDay(r.date) }}</span>
+            <span class="row-sub">{{ r.source === 'azkar' ? t('Azkar') : t('Workout') }} · {{ formatDay(r.date) }}</span>
           </span>
           <span class="amount">+{{ money(r.amount) }}</span>
         </div>
@@ -61,7 +62,7 @@ const off = computed(() => !(settings.azkarReward > 0) && !(settings.workoutRewa
     </section>
 
     <section v-if="paid.length" class="group">
-      <h2 class="section-title">Paid from rewards</h2>
+      <h2 class="section-title">{{ t('Paid from rewards') }}</h2>
       <div class="card rows">
         <ExpenseRow v-for="e in paid" :key="e.id" :expense="e" :currency="settings.currency" />
       </div>
@@ -70,7 +71,7 @@ const off = computed(() => !(settings.azkarReward > 0) && !(settings.workoutRewa
 </template>
 
 <style scoped>
-.header { min-height: 48px; display: flex; align-items: center; gap: 4px; margin-left: -10px; }
+.header { min-height: 48px; display: flex; align-items: center; gap: 4px; margin-inline-start: -10px; }
 .title { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
 .hero { background: var(--accent); color: #fff; border-radius: 24px; padding: 20px; display: flex; flex-direction: column; gap: 6px; }
 .hero-label { font-size: 13px; font-weight: 600; opacity: 0.85; }

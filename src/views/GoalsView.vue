@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { locale, t } from '../i18n'
 import { computed } from 'vue'
 import AppIcon from '../components/AppIcon.vue'
 import { parseYmd, todayYmd } from '../lib/dates'
@@ -16,10 +17,10 @@ const rows = computed(() =>
   goals.goals.map((g) => {
     const perMonth = perMonthNeeded(g, today)
     const pct = Math.round(progress(g) * 100)
-    let detail = `${money(saved(g))} of ${money(g.target)}`
-    if (pct >= 100) detail = `Reached · ${money(saved(g))}`
-    else if (perMonth !== null) detail += ` · ${money(perMonth)} a month to ${parseYmd(g.targetDate!).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}`
-    else if (g.targetDate && g.targetDate < today) detail += ' · date passed'
+    let detail = t('{saved} of {target}', { saved: money(saved(g)), target: money(g.target) })
+    if (pct >= 100) detail = t('Reached · {amount}', { amount: money(saved(g)) })
+    else if (perMonth !== null) detail += ` · ${t('{amount} a month to {date}', { amount: money(perMonth), date: parseYmd(g.targetDate!).toLocaleDateString(locale(), { month: 'short', year: 'numeric' }) })}`
+    else if (g.targetDate && g.targetDate < today) detail += ` · ${t('date passed')}`
     return { id: g.id, name: g.name, pct, detail, done: pct >= 100 }
   }),
 )
@@ -28,19 +29,19 @@ const rows = computed(() =>
 <template>
   <main class="page page--no-tabs">
     <header class="header">
-      <RouterLink to="/" class="icon-btn icon-btn--plain" aria-label="Back to overview"><AppIcon name="back" /></RouterLink>
-      <h1 class="title">Savings goals</h1>
-      <RouterLink to="/goals/new" class="icon-btn icon-btn--accent" aria-label="Add goal"><AppIcon name="plus" /></RouterLink>
+      <RouterLink to="/" class="icon-btn icon-btn--plain" :aria-label="t('Back to overview')"><AppIcon name="back" /></RouterLink>
+      <h1 class="title">{{ t('Savings goals') }}</h1>
+      <RouterLink to="/goals/new" class="icon-btn icon-btn--accent" :aria-label="t('Add goal')"><AppIcon name="plus" /></RouterLink>
     </header>
 
     <section v-if="goals.goals.length" class="hero">
-      <span class="hero-label">Put aside for your goals</span>
+      <span class="hero-label">{{ t('Put aside for your goals') }}</span>
       <span class="hero-amount">{{ money(goals.totalSaved) }}</span>
-      <span class="hero-label">Kept apart from your spending budget</span>
+      <span class="hero-label">{{ t('Kept apart from your spending budget') }}</span>
     </section>
 
     <p v-if="!goals.goals.length" class="card empty">
-      Save toward something: a car, Eid, school fees, an emergency fund. Tap + to add a goal, then put money aside for it whenever you can.
+      {{ t('Save toward something: a car, Eid, school fees, an emergency fund. Tap + to add a goal, then put money aside for it whenever you can.') }}
     </p>
 
     <RouterLink v-for="g in rows" :key="g.id" :to="`/goals/${g.id}`" class="card goal">
@@ -56,7 +57,7 @@ const rows = computed(() =>
 </template>
 
 <style scoped>
-.header { display: flex; align-items: center; justify-content: space-between; min-height: 48px; margin-left: -10px; }
+.header { display: flex; align-items: center; justify-content: space-between; min-height: 48px; margin-inline-start: -10px; }
 .title { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; flex: 1 1 auto; }
 .hero { background: var(--accent); color: #fff; border-radius: 24px; padding: 20px; display: flex; flex-direction: column; gap: 4px; }
 .hero-label { font-size: 13px; font-weight: 600; opacity: 0.85; }

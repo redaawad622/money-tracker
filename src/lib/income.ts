@@ -1,3 +1,4 @@
+import { t } from '../i18n'
 import { daysBetween, monthKeyOf } from './dates'
 import { sumMoney } from './money'
 
@@ -106,11 +107,11 @@ export function dealYearlyPercent(d: Deal): number | null {
 }
 
 export function formatPeriod(days: number): string {
-  if (days < 45) return `${days} ${days === 1 ? 'day' : 'days'}`
+  if (days < 45) return days === 1 ? t('1 day') : t('{n} days', { n: days })
   const months = Math.round(days / 30.44)
-  if (months < 24) return `${months} months`
+  if (months < 24) return t('{n} months', { n: months })
   const years = Math.round((months / 12) * 10) / 10
-  return `${years} years`
+  return t('{n} years', { n: years })
 }
 
 /** Deals are counted in the year they end, when the earnings come in. */

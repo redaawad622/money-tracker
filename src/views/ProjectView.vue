@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { locale, t } from '../i18n'
 import { computed, shallowRef } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppIcon from '../components/AppIcon.vue'
@@ -43,7 +44,7 @@ const months = computed(() => {
   }
   return [...groups].map(([key, entries]) => {
     const [y, m] = key.split('-').map(Number)
-    return { key, label: new Date(y, m - 1, 1).toLocaleDateString('en-GB', { month: 'long' }), entries, net: sumMoney(entries.map((e) => e.amount)) }
+    return { key, label: new Date(y, m - 1, 1).toLocaleDateString(locale(), { month: 'long' }), entries, net: sumMoney(entries.map((e) => e.amount)) }
   })
 })
 
@@ -62,65 +63,65 @@ function add() {
 }
 
 function removeEntry(id: string) {
-  if (project.value && window.confirm('Delete this entry?')) income.removeEntry(project.value.id, id)
+  if (project.value && window.confirm(t('Delete this entry?'))) income.removeEntry(project.value.id, id)
 }
 </script>
 
 <template>
   <main class="page page--no-tabs">
     <header class="header">
-      <RouterLink :to="{ path: '/income', query: $route.query }" class="icon-btn" aria-label="Back"><AppIcon name="back" /></RouterLink>
-      <h1 class="title">{{ project?.name ?? 'Project' }}</h1>
-      <RouterLink v-if="project" :to="{ path: `/income/${project.id}`, query: $route.query }" class="icon-btn" aria-label="Edit project"><AppIcon name="pencil" /></RouterLink>
+      <RouterLink :to="{ path: '/income', query: $route.query }" class="icon-btn" :aria-label="t('Back')"><AppIcon name="back" /></RouterLink>
+      <h1 class="title">{{ project?.name ?? t('Project') }}</h1>
+      <RouterLink v-if="project" :to="{ path: `/income/${project.id}`, query: $route.query }" class="icon-btn" :aria-label="t('Edit project')"><AppIcon name="pencil" /></RouterLink>
       <div v-else class="spacer" />
     </header>
 
-    <p v-if="!project" class="card empty">This project no longer exists.</p>
+    <p v-if="!project" class="card empty">{{ t('This project no longer exists.') }}</p>
     <template v-else>
       <section class="summary">
         <div class="year">
-          <button type="button" class="year-btn" aria-label="Previous year" @click="shiftYear(-1)"><AppIcon name="back" :size="18" /></button>
-          <span class="summary-label">Net profit {{ year }}</span>
-          <button type="button" class="year-btn" aria-label="Next year" :disabled="year >= thisYear" @click="shiftYear(1)"><AppIcon name="forward" :size="18" /></button>
+          <button type="button" class="year-btn" :aria-label="t('Previous year')" @click="shiftYear(-1)"><AppIcon name="back" :size="18" /></button>
+          <span class="summary-label">{{ t('Net profit {year}', { year }) }}</span>
+          <button type="button" class="year-btn" :aria-label="t('Next year')" :disabled="year >= thisYear" @click="shiftYear(1)"><AppIcon name="forward" :size="18" /></button>
         </div>
         <span class="summary-value">{{ money(totals.net) }}</span>
         <div class="stats">
-          <div class="stat"><span class="summary-label">Earned</span><span class="stat-value">{{ money(totals.earnings) }}</span></div>
-          <div class="stat"><span class="summary-label">Costs</span><span class="stat-value">{{ money(totals.costs) }}</span></div>
+          <div class="stat"><span class="summary-label">{{ t('Earned') }}</span><span class="stat-value">{{ money(totals.earnings) }}</span></div>
+          <div class="stat"><span class="summary-label">{{ t('Costs') }}</span><span class="stat-value">{{ money(totals.costs) }}</span></div>
         </div>
         <span v-if="project.note" class="summary-label">{{ project.note }}</span>
-        <span class="summary-label">All time: {{ money(allTime) }}</span>
+        <span class="summary-label">{{ t('All time: {amount}', { amount: money(allTime) }) }}</span>
       </section>
 
       <form class="card add" @submit.prevent="add">
         <div class="segments">
           <button type="button" class="segment" :class="{ 'segment--on': kind === 'earning' }" :aria-pressed="kind === 'earning'" @click="kind = 'earning'">
-            <AppIcon name="up" :size="16" /> Earning
+            <AppIcon name="up" :size="16" /> {{ t('Earning') }}
           </button>
           <button type="button" class="segment" :class="{ 'segment--on': kind === 'cost' }" :aria-pressed="kind === 'cost'" @click="kind = 'cost'">
-            <AppIcon name="down" :size="16" /> Cost
+            <AppIcon name="down" :size="16" /> {{ t('Cost') }}
           </button>
         </div>
         <div class="add-row">
           <label class="field">
-            Amount ({{ settings.currency }})
+            {{ t('Amount ({currency})', { currency: settings.currency }) }}
             <input v-model.number="amount" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" />
           </label>
           <label class="field">
-            Date
+            {{ t('Date') }}
             <input v-model="date" type="date" />
           </label>
         </div>
         <label class="field">
-          Note (optional)
-          <input v-model="note" type="text" maxlength="60" :placeholder="kind === 'cost' ? 'e.g. Rent, supplies, staff' : 'e.g. Week sales'" />
+          {{ t('Note (optional)') }}
+          <input v-model="note" type="text" maxlength="60" :placeholder="kind === 'cost' ? t('e.g. Rent, supplies, staff') : t('e.g. Week sales')" />
         </label>
         <button type="submit" class="primary-btn" :disabled="!canAdd">
-          <AppIcon name="plus" :stroke-width="2.4" /> Add {{ kind }}
+          <AppIcon name="plus" :stroke-width="2.4" /> {{ kind === 'cost' ? t('Add cost') : t('Add earning') }}
         </button>
       </form>
 
-      <p v-if="!months.length" class="card empty">Nothing logged for {{ year }} yet.</p>
+      <p v-if="!months.length" class="card empty">{{ t('Nothing logged for {year} yet.', { year }) }}</p>
       <section v-for="m in months" :key="m.key" class="group">
         <div class="group-head">
           <h2 class="section-title">{{ m.label }}</h2>
@@ -132,11 +133,11 @@ function removeEntry(id: string) {
               <AppIcon :name="e.amount < 0 ? 'down' : 'up'" :size="16" />
             </span>
             <span class="entry-text">
-              <span class="entry-note">{{ e.note || (e.amount < 0 ? 'Cost' : 'Earning') }}</span>
+              <span class="entry-note">{{ e.note || (e.amount < 0 ? t('Cost') : t('Earning')) }}</span>
               <span class="muted entry-date">{{ formatDay(e.date) }}</span>
             </span>
             <span class="entry-amount" :class="e.amount < 0 ? 'bad' : 'good'">{{ e.amount < 0 ? '−' : '+' }}{{ money(Math.abs(e.amount)) }}</span>
-            <button type="button" class="icon-btn icon-btn--plain entry-del" aria-label="Delete entry" @click="removeEntry(e.id)"><AppIcon name="trash" :size="18" /></button>
+            <button type="button" class="icon-btn icon-btn--plain entry-del" :aria-label="t('Delete entry')" @click="removeEntry(e.id)"><AppIcon name="trash" :size="18" /></button>
           </div>
         </div>
       </section>
