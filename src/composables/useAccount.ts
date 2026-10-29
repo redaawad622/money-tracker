@@ -16,13 +16,15 @@ import type { Account, Transfer } from '../lib/accounts'
 import type { Goal } from '../lib/goals'
 import type { IncomeSource } from '../lib/income'
 import type { AzkarRound, Earned, Reward, RewardSource } from '../lib/rewards'
+import type { MuhasabaRow } from '../lib/sadaqa'
 import type { Subscription } from '../lib/subscriptions'
 import type { Local, Remote } from '../lib/sync'
 
 // Optional account: signing in with Google or Apple (through Supabase) backs up and syncs this
 // device's expenses, subscriptions, income, rewards, categories, accounts, transfers, goals and
 // settings (not receipt photos). Without one the app works exactly as before, data on the device only. Signed in, it also reads Azkar Tracker's and
-// Workout Tracker's rows on the same account to pay their rewards.
+// Workout Tracker's rows on the same account to pay their rewards, and the sadaqa given in Azkar
+// Tracker's محاسبة النفس to add it as expenses.
 
 export type Provider = 'google' | 'apple'
 export type SyncState = 'idle' | 'syncing' | 'error'
@@ -34,6 +36,7 @@ const URL_ = import.meta.env.VITE_SUPABASE_URL ?? 'https://lgbtzvvgaemlpnuktssx.
 const KEY = import.meta.env.VITE_SUPABASE_KEY ?? 'sb_publishable_yatAKSTGeF_d9I0CoTyB_g_iAgC8FMf'
 const TABLE = 'money_records'
 const AZKAR_TABLE = 'azkar_rounds'
+const AZKAR_RECORDS = 'azkar_records'
 const WORKOUT_TABLE = 'records'
 
 // The iPhone app gets the sign-in result back on this URL (CFBundleURLTypes in ios/App/App/Info.plist).
@@ -126,12 +129,23 @@ async function readEarned(c: SupabaseClient) {
   return earned
 }
 
+// The sadaqa expenses Azkar Tracker's محاسبة entries call for, or null when they can't be read.
+async function readSadaqa(c: SupabaseClient) {
+  const { sadaqaExpenses } = await import('../lib/sadaqa')
+  try {
+    return sadaqaExpenses((await pullLive(c, AZKAR_RECORDS, 'uid, data', 'muhasaba')) as MuhasabaRow[])
+  } catch {
+    return null
+  }
+}
+
 const withoutId = <T extends { id: string }>({ id, ...rest }: T) => rest
 
 async function syncOnce(c: SupabaseClient, userId: string) {
   const { plan, applyOps, KINDS } = await import('../lib/sync')
   const { reconcileRewards } = await import('../lib/rewards')
-  const [all, earned] = await Promise.all([pullAll(c), readEarned(c)])
+  const { reconcileSadaqa } = await import('../lib/sadaqa')
+  const [all, earned, sadaqa] = await Promise.all([pullAll(c), readEarned(c), readSadaqa(c)])
   // Only the kinds this build knows, so a kind added by a later build is never deleted here.
   const remote = all.filter((r) => (KINDS as readonly string[]).includes(r.kind))
   const synced = await loadJson<Record<string, string>>(SYNCED, {})
@@ -152,6 +166,9 @@ async function syncOnce(c: SupabaseClient, userId: string) {
   for (const r of rewards.rewards) known.set(r.id, r)
   const nextRewards = reconcileRewards([...known.values()], earned, { azkar: settings.azkarReward, workout: settings.workoutReward })
   if (JSON.stringify(nextRewards) !== JSON.stringify(rewards.rewards)) rewards.rewards = nextRewards
+  // Sadaqa ticked off in Azkar Tracker's محاسبة النفس, as expenses (left as they are if unreadable).
+  const withSadaqa = sadaqa && reconcileSadaqa(expenses.expenses, sadaqa)
+  if (withSadaqa) expenses.expenses = withSadaqa
 
   const local: Local[] = [
     ...expenses.expenses.map((e) => ({ kind: 'expenses' as const, uid: e.id, data: withoutId(e) })),

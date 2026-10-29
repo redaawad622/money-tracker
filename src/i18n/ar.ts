@@ -105,6 +105,7 @@ export const AR: Record<string, string> = {
   "Taxi & bus": "تاكسي ومواصلات",
   "Health": "صحة",
   "Shopping": "مشتريات",
+  "Sadaqa": "صدقة",
   "Other": "أخرى",
   "Mobile bill": "فاتورة الموبايل",
   "Internet bill": "فاتورة الإنترنت",

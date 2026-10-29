@@ -42,6 +42,7 @@ export const CATEGORIES: Category[] = [
   { id: 'taxi', name: 'Taxi & bus', group: 'daily', family: 'car', icon: 'taxi' },
   { id: 'health', name: 'Health', group: 'daily', family: 'health', icon: 'health' },
   { id: 'shopping', name: 'Shopping', group: 'daily', family: 'family', icon: 'shopping' },
+  { id: 'sadaqa', name: 'Sadaqa', group: 'daily', family: 'other', icon: 'gift' },
   { id: 'other-daily', name: 'Other', group: 'daily', family: 'other', icon: 'other' },
   { id: 'mobile-bill', name: 'Mobile bill', group: 'monthly', family: 'bills', icon: 'mobile' },
   { id: 'internet-bill', name: 'Internet bill', group: 'monthly', family: 'bills', icon: 'internet' },
