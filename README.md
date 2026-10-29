@@ -23,6 +23,7 @@ Built with **Vue 3 + TypeScript + Vite + Pinia**, packaged as a mobile app with 
   - **Workout Tracker**: every 30 days with a logged workout, in total (rest days don't reset it; past workouts count)
   - Set each reward's amount in Settings (0 turns it off). A reward keeps the amount it was earned at, and an undone round or deleted workout takes its reward back.
   - Turn on **Pay from rewards** when adding an expense to pay it from the pot; it then doesn't count against the budget.
+- **Sadaqa from Azkar Tracker**: a صدقة ticked off in Azkar Tracker's محاسبة النفس with an amount is added as an expense in the **Sadaqa** category, on the day it was ticked. Unticking it or deleting the entry there takes it back out, and a changed amount follows; the account, store and note you set here stay. It counts against the budget like any expense.
 - **Budget warning** (Overview): once the month passes a share of the budget (80% by default, set in Settings, or off), a card says how much is used and what's left per day, and flags a day that went over its own budget
 - **Due soon** (Overview): unpaid fixed subscriptions due in the next few days
 - **Bill reminders** (iPhone, Settings): a notification at 9:00 on the day, or 1, 2, 3 or 7 days before, for each unpaid fixed subscription; tapping it opens Fixed
@@ -37,7 +38,7 @@ Built with **Vue 3 + TypeScript + Vite + Pinia**, packaged as a mobile app with 
 
 ## Account and sync (optional)
 
-Signing in with Google or Apple on **Settings** backs up and syncs expenses, subscriptions, income and settings through Supabase. Without an account the app works as before, data on the device only. It shares Workout Tracker's Supabase project (table `money_records`, see `supabase/migrations/`), so one sign-in covers both apps. Each sync also reads the Azkar rounds (`azkar_rounds`) and logged workouts (`records`, kind `entries`) on the same account to pay rewards; an app that can't be read leaves its rewards as they are.
+Signing in with Google or Apple on **Settings** backs up and syncs expenses, subscriptions, income and settings through Supabase. Without an account the app works as before, data on the device only. It shares Workout Tracker's Supabase project (table `money_records`, see `supabase/migrations/`), so one sign-in covers both apps. Each sync also reads the Azkar rounds (`azkar_rounds`) and logged workouts (`records`, kind `entries`) on the same account to pay rewards, and Azkar's محاسبة entries (`azkar_records`, kind `muhasaba`) for sadaqa expenses; an app that can't be read leaves its rewards and expenses as they are.
 
 - Changes upload a few seconds after the last edit, when the app comes back to the front, and on **Sync now**.
 - Merging never deletes local data unless another device deleted that record. An expense edited on two devices is kept twice; a subscription edited on both keeps this device's fields and every paid date.
